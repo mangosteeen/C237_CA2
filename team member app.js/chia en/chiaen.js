@@ -1,35 +1,33 @@
-app.get('/updateProduct/:id', checkAuthenticated, checkAdmin, (req, res) => {
-    const productId = req.params.id;
-    const sql = 'SELECT * FROM products WHERE productId = ?';
+// Load the edit request form
+app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
+    const requestId = req.params.id;
+    const sql = 'SELECT * FROM requests WHERE id = ?';
 
-    connection.query(sql , [productId], (error, results) => {
+    connection.query(sql, [requestId], (error, results) => {
         if (error) throw error;
 
         if (results.length > 0) {
-            res.render('updateProduct', { product: results[0] }); // This shows the edit form
+            res.render('editRequest', { request: results[0], user: req.session.user }); // Render edit form
         } else {
-            res.status(404).send('Product not found');
+            res.status(404).send('Request not found');
         }
     });
 });
 
-app.post('/updateProduct/:id', upload.single('image'), (req, res) => {
-    const productId = req.params.id;
-    const { name, quantity, price } = req.body;
-    let image = req.body.currentImage; 
+// Submit the edited request
+app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
+    const requestId = req.params.id;
+    const { elder_name, task_type, description, urgency } = req.body;
 
-    if (req.file) { 
-        image = req.file.filename; // If user uploads new image, use it
-    } 
+    const sql = 'UPDATE requests SET elder_name = ?, task_type = ?, description = ?, urgency = ? WHERE id = ?';
 
-    const sql = 'UPDATE products SET productName = ?, quantity = ?, price = ?, image = ? WHERE productId = ?';
-
-    connection.query(sql, [name, quantity, price, image, productId], (error, results) => {
+    connection.query(sql, [elder_name, task_type, description, urgency, requestId], (error, results) => {
         if (error) {
-            console.error("Error updating product:", error);
-            res.status(500).send('Error updating product');
+            console.error("Error updating request:", error);
+            res.status(500).send('Error updating request');
         } else {
-            res.redirect('/inventory');
+            res.redirect('/my-requests'); // Redirect to user’s list
         }
     });
 });
+
