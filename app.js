@@ -143,6 +143,7 @@ app.post('/login', (req, res) => {
     });
 });
 
+// --------------entong - view page after login----------------------------------------------------------------------
 
 //******** TODO: Insert code for dashboard route to render dashboard page for users. ********//
 app.get('/viewrequest', checkAuthenticated, (req, res) => {

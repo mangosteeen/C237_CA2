@@ -1,1 +1,77 @@
-//hiiiiiii
+//this part is for app.js
+app.get('/viewrequest', checkAuthenticated, (req, res) => {
+    const userId = req.session.user.id;
+
+    const sql = 'SELECT * FROM requests WHERE user_id = ?'; // assuming you have user_id in table
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            return res.status(500).send('Error loading your requests.');
+        }
+        res.render('viewrequest', { 
+            user: req.session.user, 
+            userRequests: results 
+        });
+    });
+});
+
+
+//this part is for views.ejs///////////////////////////////////////////////////////////////////////
+
+// <!DOCTYPE html>
+// <html>
+// <head>
+//     <title>My Requests</title>
+//     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+//     <style>
+//         body {
+//             background-color: #fff8f4;
+//         }
+//         .card {
+//             margin-bottom: 1.5rem;
+//             border-radius: 12px;
+//         }
+//         .card-title {
+//             font-size: 1.25rem;
+//         }
+//         .badge {
+//             font-size: 0.95rem;
+//         }
+//     </style>
+// </head>
+// <body>
+//     <div class="container mt-5">
+//         <h1>View My Requests</h1>
+//         <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
+
+//         <% if (user.role === 'admin') { %>
+//             <a href="/admin" class="btn btn-primary mb-3">Admin Dashboard</a>
+//         <% } %>
+//         <a href="/logout" class="btn btn-secondary mb-3 ml-2">Logout</a>
+
+//         <% if (userRequests && userRequests.length > 0) { %>
+//             <% userRequests.forEach(request => { %>
+//                 <div class="card">
+//                     <div class="card-body">
+//                         <h5 class="card-title"><%= request.taskType %> - <%= request.elderName %></h5>
+//                         <p class="card-text"><strong>Description:</strong> <%= request.description %></p>
+//                         <p class="card-text">
+//                             <strong>Urgency:</strong>
+//                             <% if (request.urgency === 'High') { %>
+//                                 <span class="badge badge-danger">High</span>
+//                             <% } else if (request.urgency === 'Medium') { %>
+//                                 <span class="badge badge-warning">Medium</span>
+//                             <% } else { %>
+//                                 <span class="badge badge-success">Low</span>
+//                             <% } %>
+//                         </p>
+//                         <p class="card-text"><strong>Status:</strong> <%= request.requestStatus %></p>
+//                     </div>
+//                 </div>
+//             <% }) %>
+//         <% } else { %>
+//             <div class="alert alert-info">You have no requests currently.</div>
+//         <% } %>
+//     </div>
+// </body>
+// </html>
+
