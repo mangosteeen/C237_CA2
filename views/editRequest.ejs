@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Request</title>
+</head>
+<body>
+  <h2>Edit Assistance Request</h2>
+
+  <form action="/requests/<%= request.id %>/update" method="POST">
+    <label for="elder_name">Elder's Name:</label>
+    <input type="text" id="elder_name" name="elder_name" value="<%= request.elder_name %>" required><br><br>
+
+    <label for="task_type">Task Type:</label>
+    <select name="task_type" id="task_type" required>
+      <option value="visit" <%= request.task_type === 'visit' ? 'selected' : '' %>>Visit</option>
+      <option value="call" <%= request.task_type === 'call' ? 'selected' : '' %>>Call</option>
+      <option value="errand" <%= request.task_type === 'errand' ? 'selected' : '' %>>Errand</option>
+    </select><br><br>
+
+    <label for="description">Description:</label><br>
+    <textarea name="description" id="description" rows="4" cols="50" required><%= request.description %></textarea><br><br>
+
+    <label for="urgency">Urgency:</label>
+    <select name="urgency" id="urgency" required>
+      <option value="low" <%= request.urgency === 'low' ? 'selected' : '' %>>Low</option>
+      <option value="medium" <%= request.urgency === 'medium' ? 'selected' : '' %>>Medium</option>
+      <option value="high" <%= request.urgency === 'high' ? 'selected' : '' %>>High</option>
+    </select><br><br>
+
+    <button type="submit">Update Request</button>
+  </form>
+
+  <br>
+  <a href="/my-requests">Back to My Requests</a>
+</body>
+</html>
