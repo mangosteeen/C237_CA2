@@ -10,11 +10,11 @@ const app = express();
 
 // Database connection
 const db = mysql.createConnection({
-    host: 'ujwl2i.h.filess.io',
+    host: 'q7-dbf.h.filess.io',
     port: 3307,
-    user: 'C237database_northmine',        
-    password: 'ade2765fb641aeb669bd9900fd52ad1504a732e0',       
-    database: 'C237database_northmine'
+    user: 'CA2database_forgotten',        
+    password: '69a15e57e33ad4c69c9574abfc7d967431ee99ae',       
+    database: 'CA2database_forgotten'
 });
 
 db.connect((err) => {
