@@ -135,6 +135,20 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.get('/view', checkAuthenticated, (req, res) => {
+    const userId = req.session.user.id; // Adjust if your user id key is different
+    const sql = 'SELECT * FROM requests WHERE userId = ?'; // Adjust column 'userId' to your DB column name
+
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Database error');
+        }
+
+        res.render('view', { user: req.session.user, userRequests: results });
+    });
+});
+
 // --------------entong - view page after login----------------------------------------------------------------------
 // Fixed render view to match 'view.ejs'
 app.get('/view', checkAuthenticated, (req, res) => {
