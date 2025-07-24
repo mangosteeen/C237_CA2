@@ -1,6 +1,3 @@
-const express = require('express');
-const mysql = require('mysql2');
-
 //******** TODO: Insert code to import 'express-session' *********//
 const session = require('express-session');
 
@@ -78,7 +75,7 @@ const validateRegistration = (req, res, next) => {
     if (!username || !email || !password || !address || !contact) {
         return res.status(400).send('All fields are required.');
     }
-
+    
     if (password.length < 6) {
         req.flash('error', 'Password should be at least 6 or more characters long');
         req.flash('formData', req.body);
@@ -127,7 +124,8 @@ app.post('/login', (req, res) => {
         if (results.length > 0) {
             req.session.user = results[0];
             req.flash('success', 'Login successful!');
-            res.redirect('/view');
+            // Redirecting to the correct view page after login
+            res.redirect('/view');  // Assuming your 'view.ejs' is the main dashboard for users
         } else {
             req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
@@ -136,11 +134,13 @@ app.post('/login', (req, res) => {
 });
 
 // --------------entong - view page after login----------------------------------------------------------------------
-app.get('/viewrequest', checkAuthenticated, (req, res) => {
-    res.render('viewrequest', { user: req.session.user });
+// Fixed render view to match 'view.ejs'
+app.get('/view', checkAuthenticated, (req, res) => {
+    res.render('view', { user: req.session.user });
 });
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
+// Fixed render view to 'admin'
 app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('admin', { user: req.session.user });
 });
@@ -152,8 +152,9 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------Joanne - Add New request----------------------------------------------------------------------
+// Fixed render view to 'AddNewRequest' (matches your EJS filename)
 app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addRequest', { user: req.session.user });
+    res.render('AddNewRequest', { user: req.session.user });
 });
 
 app.post('/addNewRequest', (req, res) => {
@@ -165,7 +166,7 @@ app.post('/addNewRequest', (req, res) => {
             console.error("Error adding request:", error);
             res.status(500).send('Error adding request');
         } else {
-            res.redirect('/');
+            res.redirect('/view');
         }
     });
 });
@@ -179,6 +180,7 @@ app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
         if (error) throw error;
 
         if (results.length > 0) {
+            // Fixed render view to 'editRequest'
             res.render('editRequest', { request: results[0], user: req.session.user });
         } else {
             res.status(404).send('Request not found');
@@ -196,7 +198,7 @@ app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
             console.error("Error updating request:", error);
             res.status(500).send('Error updating request');
         } else {
-            res.redirect('/my-requests');
+            res.redirect('/view'); // Redirect back to user dashboard
         }
     });
 });
@@ -217,6 +219,7 @@ app.get('/viewAll', isAdmin, (req, res) => {
             return res.send("Error loading requests.");
         }
 
+        // Assuming you have a 'viewAll.ejs' file (if not, create or rename accordingly)
         res.render('viewAll', {
             requests: rows,
             msg: req.session.msg || null
@@ -242,7 +245,6 @@ app.get('/requests/:id/delete', isAdmin, (req, res) => {
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-
 const tasks = [
     { id: 1, title: 'Doctor Appointment', urgency: 'High', type: 'Appointment' },
     { id: 2, title: 'Take Medication', urgency: 'Medium', type: 'Medication' },
@@ -252,7 +254,7 @@ const tasks = [
     { id: 6, title: 'Follow-up Doctor Appointment', urgency: 'Medium', type: 'Appointment' }
 ];
 
-app.get('/', (req, res) => {
+app.get('/filter', (req, res) => {
     const { title, urgency, type } = req.query;
 
     let filteredTasks = tasks;
