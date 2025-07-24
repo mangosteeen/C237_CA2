@@ -17,6 +17,29 @@ const db = mysql.createConnection({
     database: 'C237database_northmine'
 });
 
+db.connect((err) => {
+    if (err) {
+        throw err;
+    }
+    console.log('Connected to database');
+});
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static('public'));
+
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+    // Session expires after 1 week of inactivity
+    cookie: {maxAge: 1000 * 60 * 60 * 24 * 7}
+}));
+
+app.use(flash());
+
+// Setting up EJS
+app.set('view engine', 'ejs');
+
 // --------------Joanne - Add New request----------------------------------------------------------------------
 
 app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
