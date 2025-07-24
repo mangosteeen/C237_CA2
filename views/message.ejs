@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Requests</title>
+</head>
+<body>
+  <% if (msg) { %>
+    <p style="color: green;"><%= msg %></p>
+  <% } %>
+
+  <h1>All Requests</h1>
+
+  <% requests.forEach(request => { %>
+    <div style="margin-bottom: 10px;">
+      <p>
+        Task: <%= request.task_type %> |
+        Urgency: <%= request.urgency %> |
+        Requested By: <%= request.requested_by %>
+        <!-- Delete button -->
+        <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')">Delete</a>
+      </p>
+    </div>
+  <% }) %>
+</body>
+</html>
+
