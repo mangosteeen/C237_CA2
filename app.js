@@ -137,10 +137,9 @@ app.post('/login', (req, res) => {
 
 // --------------entong -----------------------------------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
-    const userId = req.session.user.id; // Adjust if your user id key is different
-    const sql = 'SELECT * FROM requests WHERE userId = ?'; // Adjust column 'userId' to your DB column name
+    const sql = 'SELECT * FROM requests';
 
-    db.query(sql, [userId], (err, results) => {
+    db.query(sql, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Database error');
@@ -149,6 +148,7 @@ app.get('/view', checkAuthenticated, (req, res) => {
         res.render('view', { user: req.session.user, userRequests: results });
     });
 });
+
 
 app.get('/view', checkAuthenticated, (req, res) => {
     res.render('view', { user: req.session.user });
