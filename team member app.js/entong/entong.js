@@ -1,17 +1,18 @@
-//this part is for app.js
-app.get('/viewrequest', checkAuthenticated, (req, res) => {
-    const userId = req.session.user.id;
+//this part is for app.js///////////////////////////////////////////////////////////////////////////
 
-    const sql = 'SELECT * FROM requests WHERE user_id = ?'; // assuming you have user_id in table
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            return res.status(500).send('Error loading your requests.');
-        }
-        res.render('viewrequest', { 
-            user: req.session.user, 
-            userRequests: results 
-        });
-    });
+app.get('/viewrequest', checkAuthenticated, (req, res) => {
+    res.render('viewrequest', { user: req.session.user });
+});
+
+//******** TODO: Insert code for admin route to render dashboard page for admin. ********//
+app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('admin', { user: req.session.user });
+});
+
+//******** TODO: Insert code for logout route ********//
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
 });
 
 
@@ -74,4 +75,6 @@ app.get('/viewrequest', checkAuthenticated, (req, res) => {
 //     </div>
 // </body>
 // </html>
+
+
 
