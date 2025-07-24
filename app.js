@@ -135,6 +135,7 @@ app.post('/login', (req, res) => {
     });
 });
 
+// --------------entong -----------------------------------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
     const userId = req.session.user.id; // Adjust if your user id key is different
     const sql = 'SELECT * FROM requests WHERE userId = ?'; // Adjust column 'userId' to your DB column name
@@ -149,14 +150,11 @@ app.get('/view', checkAuthenticated, (req, res) => {
     });
 });
 
-// --------------entong - view page after login----------------------------------------------------------------------
-// Fixed render view to match 'view.ejs'
 app.get('/view', checkAuthenticated, (req, res) => {
     res.render('view', { user: req.session.user });
 });
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
-// Fixed render view to 'admin'
 app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('admin', { user: req.session.user });
 });
