@@ -101,20 +101,6 @@ app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
 
 // ----------------------Quinn - Delete request------------------------------------------------------------
 
-// Set EJS as the view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Middleware to parse form data (optional for future forms)
-app.use(express.urlencoded({ extended: true }));
-
-// Set up sessions
-app.use(session({
-  secret: 'your-secret-key', // Change to your own secret
-  resave: false,
-  saveUninitialized: true
-}));
-
 // Admin access control middleware
 function isAdmin(req, res, next) {
   if (req.session.user && req.session.user.role === 'admin') {
@@ -135,7 +121,7 @@ app.get('/login', (req, res) => {
 
 // Route: Display all requests
 app.get('/viewAll', isAdmin, (req, res) => {
-  db.all("SELECT * FROM requests", [], (err, rows) => {
+  connection.query("SELECT * FROM requests", [], (err, rows) => {
     if (err) {
       return res.send("Error loading requests.");
     }
@@ -153,7 +139,7 @@ app.get('/viewAll', isAdmin, (req, res) => {
 app.get('/requests/:id/delete', isAdmin, (req, res) => {
   const id = req.params.id;
 
-  db.run("DELETE FROM requests WHERE id = ?", [id], (err) => {
+  connection.query("DELETE FROM requests WHERE id = ?", [id], (err) => {
     if (err) {
       req.session.msg = "Error deleting request.";
     } else {
@@ -176,8 +162,6 @@ const tasks = [
   { id: 6, title: 'Follow-up Doctor Appointment', urgency: 'Medium', type: 'Appointment' }
 ];
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
 // Capture GET requests and apply filtering
 app.get('/', (req, res) => {
