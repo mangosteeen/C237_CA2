@@ -22,7 +22,6 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 
-// Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
@@ -30,7 +29,7 @@ app.use(session({
     secret: 'secret',
     resave: false,
     saveUninitialized: true,
-// Session expires after 1 week of inactivity
+    // Session expires after 1 week of inactivity
     cookie: {maxAge: 1000 * 60 * 60 * 24 * 7}
 }));
 
@@ -40,7 +39,7 @@ app.use(flash());
 app.set('view engine', 'ejs');
 
 // --------------------Login------------------------------------------- 
-//******** TODO: Create a Middleware to check if user is logged in. ********//
+
 const checkAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next();
@@ -56,25 +55,8 @@ const checkAdmin = (req, res, next) => {
         return next();
     } else {
         req.flash('error', 'Access denied');
-        res.redirect('/');
+        res.redirect('/admin');
     }
-};
-
-//******** TODO: Create a middleware function validateRegistration ********//
-const validateRegistration = (req, res, next) => {
-    const { username, email, password, address, contact } = req.body;
-
-    if (!username || !email || !password || !address || !contact) {
-        req.flash('error', 'All fields are required.');
-        req.flash('formData', req.body);
-        return res.redirect('/register');
-    }
-    if (password.length < 6) {
-        req.flash('error', 'Password should be at least 6 or more characters long');
-        req.flash('formData', req.body);
-        return res.redirect('/register');
-    }
-    next();
 };
 
 // Routes
@@ -86,12 +68,28 @@ app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
 });
 
+//******** TODO: Create a middleware function validateRegistration ********//
+const validateRegistration = (req, res, next) => {
+    const { username, email, password, address, contact } = req.body;
+
+    if (!username || !email || !password || !address || !contact) {
+        return res.status(400).send('All fields are required.');
+    }
+    
+    if (password.length < 6) {
+        req.flash('error', 'Password should be at least 6 or more characters long');
+        req.flash('formData', req.body);
+        return res.redirect('/register');
+    }
+    next();
+};
+
 //******** TODO: Integrate validateRegistration into the register route. ********//
 app.post('/register', validateRegistration, (req, res) => {
     //******** TODO: Update register route to include role. ********//
     const { username, email, password, address, contact, role } = req.body;
-    const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
 
+    const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
     db.query(sql, [username, email, password, address, contact, role], (err, result) => {
         if (err) {
             throw err;
@@ -135,19 +133,23 @@ app.post('/login', (req, res) => {
     });
 });
 
-// --------------entong - View list of Request--------------------------------------------------//
+// --------------entong -----------------------------------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
-    const sql = 'SELECT * FROM requests WHERE requested_by = ? OR ? = "admin"';
-    const userId = req.session.user.id;
+    const sql = 'SELECT * FROM requests';
 
-    db.query(sql, [userId, req.session.user.role], (err, results) => {
-        if (err) return res.status(500).send('Database error');
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Database error');
+        }
 
-        res.render('view', { 
-            user: req.session.user,
-            userRequests: results 
-        });
+        res.render('view', { user: req.session.user, userRequests: results });
     });
+});
+
+
+app.get('/view', checkAuthenticated, (req, res) => {
+    res.render('view', { user: req.session.user });
 });
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
@@ -167,11 +169,11 @@ app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('AddNewRequest', { user: req.session.user });
 });
 
-app.post('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
+app.post('/addNewRequest', (req, res) => {
     const { name, taskType, description, urgency, requestStatus } = req.body;
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
 
-    db.query(sql, [name, taskType, description, urgency, requestStatus], (error) => {
+    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
             res.status(500).send('Error adding request');
@@ -203,28 +205,59 @@ app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
     const { elderName, taskType, description, urgency } = req.body;
 
     const sql = 'UPDATE requests SET elderName = ?, taskType = ?, description = ?, urgency = ? WHERE id = ?';
-    db.query(sql, [elderName, taskType, description, urgency, requestId], (error) => {
+    db.query(sql, [elderName, taskType, description, urgency, requestId], (error, results) => {
         if (error) {
             console.error("Error updating request:", error);
             res.status(500).send('Error updating request');
         } else {
-            res.redirect('/view'); 
+            res.redirect('/view'); // Redirect back to user dashboard
         }
     });
 });
 
 // ----------------------Quinn - Delete request------------------------------------------------------------
-app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
-  const sql = 'DELETE FROM requests WHERE id = ?';
-  db.query(sql, [req.params.id], (err) => {
-    if (err) req.flash('error', 'Error deleting request');
-    else req.flash('success', 'Request deleted');
-    res.redirect('/view');
-  });
+function isAdmin(req, res, next) {
+    if (req.session.user && req.session.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).send('Access denied. Admins only.');
+    }
+}
+
+// Route: Display all requests
+app.get('/viewAll', isAdmin, (req, res) => {
+    db.query("SELECT * FROM requests", [], (err, rows) => {
+        if (err) {
+            return res.send("Error loading requests.");
+        }
+
+        // Assuming you have a 'viewAll.ejs' file (if not, create or rename accordingly)
+        res.render('viewAll', {
+            requests: rows,
+            msg: req.session.msg || null
+        });
+
+        req.session.msg = null;
+    });
+});
+
+// Route: Delete request by ID
+app.get('/requests/:id/delete', isAdmin, (req, res) => {
+    const id = req.params.id;
+
+    db.query("DELETE FROM requests WHERE id = ?", [id], (err) => {
+        if (err) {
+            req.session.msg = "Error deleting request.";
+        } else {
+            req.session.msg = "Request deleted successfully.";
+        }
+
+        res.redirect('/viewAll');
+    });
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-app.get('/filter', checkAuthenticated, (req, res) => {
+app.get('/filter', (req, res) => {
     const { title, urgency, type } = req.query;
 
     // Construct the SQL query to filter based on the query parameters
@@ -262,6 +295,8 @@ app.get('/filter', checkAuthenticated, (req, res) => {
         res.render('filter', { tasks: results, title, urgency, type });
     });
 });
+
+
 
 // Start server
 const PORT = 3000;
