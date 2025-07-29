@@ -149,11 +149,6 @@ app.get('/view', checkAuthenticated, (req, res) => {
     });
 });
 
-
-app.get('/view', checkAuthenticated, (req, res) => {
-    res.render('view', { user: req.session.user });
-});
-
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
 app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('admin', { user: req.session.user });
