@@ -17,6 +17,12 @@
         .badge {
             font-size: 0.95rem;
         }
+        .nav-buttons {
+            margin-bottom: 20px;
+        }
+        .nav-buttons a {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -24,11 +30,17 @@
         <h1>View My Requests</h1>
         <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
 
-        <% if (user.role === 'admin') { %>
-            <a href="/admin" class="btn btn-primary mb-3">Admin Dashboard</a>
-        <% } %>
-        <a href="/logout" class="btn btn-secondary mb-3 ml-2">Logout</a>
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <% if (user.role === 'admin') { %>
+                <a href="/admin" class="btn btn-primary">Admin Dashboard</a>
+                <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
+            <% } %>
+            <a href="/filter" class="btn btn-info">Search / Filter Requests</a>
+            <a href="/logout" class="btn btn-secondary">Logout</a>
+        </div>
 
+        <!-- List of Requests -->
         <% if (userRequests && userRequests.length > 0) { %>
             <% userRequests.forEach(request => { %>
                 <div class="card">
@@ -46,6 +58,11 @@
                             <% } %>
                         </p>
                         <p class="card-text"><strong>Status:</strong> <%= request.requestStatus %></p>
+
+                        <% if (user.role === 'admin') { %>
+                            <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
+                            <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-outline-danger btn-sm">Delete</a>
+                        <% } %>
                     </div>
                 </div>
             <% }) %>
@@ -55,4 +72,3 @@
     </div>
 </body>
 </html>
-
