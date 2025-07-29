@@ -262,24 +262,42 @@ app.get('/requests/:id/delete', isAdmin, (req, res) => {
 app.get('/filter', (req, res) => {
     const { title, urgency, type } = req.query;
 
-    // Construct the SQL query to filter based on query parameters
-    const sql = 'SELECT * FROM tasks WHERE (title LIKE ? OR ? IS NULL) AND (urgency = ? OR ? IS NULL) AND (type = ? OR ? IS NULL)';
+    // Construct the SQL query to filter based on the query parameters
+    let sql = 'SELECT * FROM tasks WHERE 1=1'; // This ensures the query is always valid
+    
+    // Array to hold query values
+    let queryValues = [];
 
-    // Query the database with dynamic values, handling empty parameters
-    db.query(sql, [
-        `%${title || ''}%`, title || null,
-        urgency || null, urgency,
-        type || null, type
-    ], (err, results) => {
+    // If title is provided, filter tasks by title
+    if (title) {
+        sql += ' AND title LIKE ?';
+        queryValues.push(`%${title}%`);  // Use % for partial match
+    }
+
+    // If urgency is provided, filter tasks by urgency
+    if (urgency) {
+        sql += ' AND urgency = ?';
+        queryValues.push(urgency);
+    }
+
+    // If type is provided, filter tasks by type
+    if (type) {
+        sql += ' AND type = ?';
+        queryValues.push(type);
+    }
+
+    // Execute the query with dynamic values
+    db.query(sql, queryValues, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Database error');
         }
 
         // Render the filter page with the filtered results
-        res.render('filter', { tasks: results, urgency, type, title });
+        res.render('filter', { tasks: results, title, urgency, type });
     });
 });
+
 
 
 // Start server
