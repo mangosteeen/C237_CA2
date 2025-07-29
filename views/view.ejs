@@ -28,11 +28,14 @@
 <body>
     <div class="container mt-5">
         <h1>View My Requests</h1>
-        <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
+        <p>
+        Welcome, <%= user.username %> 
+        <% if (user.role === 'elderly') { %> (👵 Elderly) <% } else { %> (🧑‍🤝‍🧑 Volunteer) <% } %>
+        </p>
 
         <!-- Navigation Buttons -->
         <div class="nav-buttons">
-            <% if (user.role === 'admin') { %>
+            <% if (user.role === 'volunteer') { %>
                 <a href="/admin" class="btn btn-primary">Admin Dashboard</a>
                 <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <% } %>
@@ -59,7 +62,7 @@
                         </p>
                         <p class="card-text"><strong>Status:</strong> <%= request.requestStatus %></p>
 
-                        <% if (user.role === 'admin') { %>
+                        <% if (user.role === 'volunteer') { %>
                             <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
                             <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-outline-danger btn-sm">Delete</a>
                         <% } %>

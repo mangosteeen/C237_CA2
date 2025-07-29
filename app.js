@@ -6,7 +6,7 @@ const flash = require('connect-flash');
 const app = express();
 const path = require('path');
 
-// Database connection
+//******** TODO: Create database connection *********//
 const db = mysql.createConnection({
     host: 'q7-dbf.h.filess.io',
     port: 3307,
@@ -22,7 +22,7 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 
-// Middleware
+//******** TODO: Set up middleware *********//
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
@@ -30,14 +30,15 @@ app.use(session({
     secret: 'secret',
     resave: false,
     saveUninitialized: true,
-// Session expires after 1 week of inactivity
+    // Session expires after 1 week of inactivity
     cookie: {maxAge: 1000 * 60 * 60 * 24 * 7}
 }));
 
 app.use(flash());
 
-// Setting up EJS
+//******** TODO: Set up EJS view engine *********//
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // --------------------Login------------------------------------------- 
 //******** TODO: Create a Middleware to check if user is logged in. ********//
@@ -52,7 +53,7 @@ const checkAuthenticated = (req, res, next) => {
 
 //******** TODO: Create a Middleware to check if user is admin. ********//
 const checkAdmin = (req, res, next) => {
-    if (req.session.user.role === 'admin') {
+    if (req.session.user.role === 'volunteer') {
         return next();
     } else {
         req.flash('error', 'Access denied');
@@ -77,11 +78,12 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
-// Routes
+//******** TODO: Insert code for main landing page ********//
 app.get('/', (req, res) => {
     res.render('index', { user: req.session.user, messages: req.flash('success')});
 });
 
+//******** TODO: Insert code for registration page ********//
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
 });
@@ -126,8 +128,8 @@ app.post('/login', (req, res) => {
         if (results.length > 0) {
             req.session.user = results[0];
             req.flash('success', 'Login successful!');
-            // Redirecting to the correct view page after login
-            res.redirect('/view');  // Assuming your 'view.ejs' is the main dashboard for users
+            //******** TODO: Redirect to user dashboard after login ********//
+            res.redirect('/view');
         } else {
             req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
@@ -162,7 +164,6 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------Joanne - Add New request----------------------------------------------------------------------
-// Fixed render view to 'AddNewRequest' (matches your EJS filename)
 app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('AddNewRequest', { user: req.session.user });
 });
@@ -190,7 +191,6 @@ app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
         if (error) throw error;
 
         if (results.length > 0) {
-            // Fixed render view to 'editRequest'
             res.render('editRequest', { request: results[0], user: req.session.user });
         } else {
             res.status(404).send('Request not found');
@@ -227,43 +227,34 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 app.get('/filter', checkAuthenticated, (req, res) => {
     const { title, urgency, type } = req.query;
 
-    // Construct the SQL query to filter based on the query parameters
-    let sql = 'SELECT * FROM tasks WHERE 1=1'; // This ensures the query is always valid
-    
-    // Array to hold query values
+    let sql = 'SELECT * FROM tasks WHERE 1=1';
     let queryValues = [];
 
-    // If title is provided, filter tasks by title
     if (title) {
         sql += ' AND title LIKE ?';
-        queryValues.push(`%${title}%`);  // Use % for partial match
+        queryValues.push(`%${title}%`);
     }
 
-    // If urgency is provided, filter tasks by urgency
     if (urgency) {
         sql += ' AND urgency = ?';
         queryValues.push(urgency);
     }
 
-    // If type is provided, filter tasks by type
     if (type) {
         sql += ' AND type = ?';
         queryValues.push(type);
     }
 
-    // Execute the query with dynamic values
     db.query(sql, queryValues, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Database error');
         }
-
-        // Render the filter page with the filtered results
         res.render('filter', { tasks: results, title, urgency, type });
     });
 });
 
-// Start server
+//******** TODO: Start the server ********//
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
