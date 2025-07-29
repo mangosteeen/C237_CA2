@@ -1,7 +1,6 @@
+//******** TODO: Insert code to import 'express-session' *********//
 const express = require('express');
 const mysql = require('mysql2');
-
-//******** TODO: Insert code to import 'express-session' *********//
 const session = require('express-session');
 const flash = require('connect-flash');
 const app = express();
@@ -69,7 +68,6 @@ app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
 });
 
-
 //******** TODO: Create a middleware function validateRegistration ********//
 const validateRegistration = (req, res, next) => {
     const { username, email, password, address, contact } = req.body;
@@ -86,11 +84,10 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
-
 //******** TODO: Integrate validateRegistration into the register route. ********//
 app.post('/register', validateRegistration, (req, res) => {
     //******** TODO: Update register route to include role. ********//
-    const { username, email, password, address, contact, role} = req.body;
+    const { username, email, password, address, contact, role } = req.body;
 
     const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
     db.query(sql, [username, email, password, address, contact, role], (err, result) => {
@@ -115,7 +112,6 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
-    // Validate email and password
     if (!email || !password) {
         req.flash('error', 'All fields are required.');
         return res.redirect('/login');
@@ -123,28 +119,37 @@ app.post('/login', (req, res) => {
 
     const sql = 'SELECT * FROM users WHERE email = ? AND password = SHA1(?)';
     db.query(sql, [email, password], (err, results) => {
-        if (err) {
-            throw err;
-        }
+        if (err) throw err;
 
         if (results.length > 0) {
-            // Successful login
-            req.session.user = results[0]; // store user in session
+            req.session.user = results[0];
             req.flash('success', 'Login successful!');
-            //******** TO DO: Update to redirect users to /dashboard route upon successful log in ********//
-            res.redirect('/dashboard');
+            // Redirecting to the correct view page after login
+            res.redirect('/view');  // Assuming your 'view.ejs' is the main dashboard for users
         } else {
-            // Invalid credentials
             req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
         }
     });
 });
 
+// --------------entong -----------------------------------------------------------------------------//
+app.get('/view', checkAuthenticated, (req, res) => {
+    const sql = 'SELECT * FROM requests';
 
-//******** TODO: Insert code for dashboard route to render dashboard page for users. ********//
-app.get('/viewrequest', checkAuthenticated, (req, res) => {
-    res.render('viewrequest', { user: req.session.user });
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Database error');
+        }
+
+        res.render('view', { user: req.session.user, userRequests: results });
+    });
+});
+
+
+app.get('/view', checkAuthenticated, (req, res) => {
+    res.render('view', { user: req.session.user });
 });
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
@@ -158,159 +163,143 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-
 // --------------Joanne - Add New request----------------------------------------------------------------------
-
+// Fixed render view to 'AddNewRequest' (matches your EJS filename)
 app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addRequest', {user: req.session.user } ); 
+    res.render('AddNewRequest', { user: req.session.user });
 });
 
 app.post('/addNewRequest', (req, res) => {
-    // Extract request data from the request body
     const { name, taskType, description, urgency, requestStatus } = req.body;
-   
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    // Insert the new request into the database
-    connection.query(sql , [name, taskType, description, urgency, requestStatus], (error, results) => {
+
+    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
-            // Handle any error that occurs during the database operation
             console.error("Error adding request:", error);
             res.status(500).send('Error adding request');
         } else {
-            // Send a success response
-            res.redirect('/');
+            res.redirect('/view');
         }
     });
 });
 
 // --------------------Chia En - Edit/Update request------------------------------------------------------
-
-// Load the edit request form
 app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
     const sql = 'SELECT * FROM requests WHERE id = ?';
 
-    connection.query(sql, [requestId], (error, results) => {
+    db.query(sql, [requestId], (error, results) => {
         if (error) throw error;
 
         if (results.length > 0) {
-            res.render('editRequest', { request: results[0], user: req.session.user }); // Render edit form
+            // Fixed render view to 'editRequest'
+            res.render('editRequest', { request: results[0], user: req.session.user });
         } else {
             res.status(404).send('Request not found');
         }
     });
 });
 
-// Submit the edited request
 app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
-    const { elder_name, task_type, description, urgency } = req.body;
+    const { elderName, taskType, description, urgency } = req.body;
 
-    const sql = 'UPDATE requests SET elder_name = ?, task_type = ?, description = ?, urgency = ? WHERE id = ?';
-
-    connection.query(sql, [elder_name, task_type, description, urgency, requestId], (error, results) => {
+    const sql = 'UPDATE requests SET elderName = ?, taskType = ?, description = ?, urgency = ? WHERE id = ?';
+    db.query(sql, [elderName, taskType, description, urgency, requestId], (error, results) => {
         if (error) {
             console.error("Error updating request:", error);
             res.status(500).send('Error updating request');
         } else {
-            res.redirect('/my-requests'); // Redirect to user’s list
+            res.redirect('/view'); // Redirect back to user dashboard
         }
     });
 });
 
 // ----------------------Quinn - Delete request------------------------------------------------------------
-
-// Admin access control middleware
 function isAdmin(req, res, next) {
-  if (req.session.user && req.session.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).send('Access denied. Admins only.');
-  }
+    if (req.session.user && req.session.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).send('Access denied. Admins only.');
+    }
 }
-
-// Dummy login route for testing (simulate an admin)
-app.get('/login', (req, res) => {
-  req.session.user = {
-    id: 1,
-    role: 'admin'
-  };
-  res.send('Logged in as admin. Go to /viewAll');
-});
 
 // Route: Display all requests
 app.get('/viewAll', isAdmin, (req, res) => {
-  db.all("SELECT * FROM requests", [], (err, rows) => {
-    if (err) {
-      return res.send("Error loading requests.");
-    }
+    db.query("SELECT * FROM requests", [], (err, rows) => {
+        if (err) {
+            return res.send("Error loading requests.");
+        }
 
-    res.render('viewAll', {
-      requests: rows,
-      msg: req.session.msg || null
+        // Assuming you have a 'viewAll.ejs' file (if not, create or rename accordingly)
+        res.render('viewAll', {
+            requests: rows,
+            msg: req.session.msg || null
+        });
+
+        req.session.msg = null;
     });
-
-    req.session.msg = null; // Clear the message after showing
-  });
 });
 
 // Route: Delete request by ID
 app.get('/requests/:id/delete', isAdmin, (req, res) => {
-  const id = req.params.id;
+    const id = req.params.id;
 
-  db.run("DELETE FROM requests WHERE id = ?", [id], (err) => {
-    if (err) {
-      req.session.msg = "Error deleting request.";
-    } else {
-      req.session.msg = "Request deleted successfully.";
-    }
+    db.query("DELETE FROM requests WHERE id = ?", [id], (err) => {
+        if (err) {
+            req.session.msg = "Error deleting request.";
+        } else {
+            req.session.msg = "Request deleted successfully.";
+        }
 
-    res.redirect('/viewAll');
-  });
+        res.redirect('/viewAll');
+    });
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
+app.get('/filter', (req, res) => {
+    const { title, urgency, type } = req.query;
 
-// Static data for testing (no database)
-const tasks = [
-  { id: 1, title: 'Doctor Appointment', urgency: 'High', type: 'Appointment' },
-  { id: 2, title: 'Take Medication', urgency: 'Medium', type: 'Medication' },
-  { id: 3, title: 'Morning Exercise', urgency: 'Low', type: 'Exercise' },
-  { id: 4, title: 'Meeting with Caregiver', urgency: 'High', type: 'Appointment' },
-  { id: 5, title: 'Walk in the Park', urgency: 'Low', type: 'Exercise' },
-  { id: 6, title: 'Follow-up Doctor Appointment', urgency: 'Medium', type: 'Appointment' }
-];
+    // Construct the SQL query to filter based on the query parameters
+    let sql = 'SELECT * FROM tasks WHERE 1=1'; // This ensures the query is always valid
+    
+    // Array to hold query values
+    let queryValues = [];
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+    // If title is provided, filter tasks by title
+    if (title) {
+        sql += ' AND title LIKE ?';
+        queryValues.push(`%${title}%`);  // Use % for partial match
+    }
 
-// Capture GET requests and apply filtering
-app.get('/', (req, res) => {
-  const { title, urgency, type } = req.query;
+    // If urgency is provided, filter tasks by urgency
+    if (urgency) {
+        sql += ' AND urgency = ?';
+        queryValues.push(urgency);
+    }
 
-  let filteredTasks = tasks;
+    // If type is provided, filter tasks by type
+    if (type) {
+        sql += ' AND type = ?';
+        queryValues.push(type);
+    }
 
-  // Apply title filter (case-insensitive search)
-  if (title) {
-    filteredTasks = filteredTasks.filter(task => task.title.toLowerCase().includes(title.toLowerCase()));
-  }
+    // Execute the query with dynamic values
+    db.query(sql, queryValues, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Database error');
+        }
 
-  // Apply urgency filter
-  if (urgency) {
-    filteredTasks = filteredTasks.filter(task => task.urgency === urgency);
-  }
-
-  // Apply type filter
-  if (type) {
-    filteredTasks = filteredTasks.filter(task => task.type === type);
-  }
-
-  // Render filtered tasks
-  res.render('filter', { tasks: filteredTasks, urgency, type, title });
+        // Render the filter page with the filtered results
+        res.render('filter', { tasks: results, title, urgency, type });
+    });
 });
+
+
 
 // Start server
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
