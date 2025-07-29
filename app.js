@@ -259,34 +259,28 @@ app.get('/requests/:id/delete', isAdmin, (req, res) => {
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-const tasks = [
-    { id: 1, title: 'Doctor Appointment', urgency: 'High', type: 'Appointment' },
-    { id: 2, title: 'Take Medication', urgency: 'Medium', type: 'Medication' },
-    { id: 3, title: 'Morning Exercise', urgency: 'Low', type: 'Exercise' },
-    { id: 4, title: 'Meeting with Caregiver', urgency: 'High', type: 'Appointment' },
-    { id: 5, title: 'Walk in the Park', urgency: 'Low', type: 'Exercise' },
-    { id: 6, title: 'Follow-up Doctor Appointment', urgency: 'Medium', type: 'Appointment' }
-];
-
 app.get('/filter', (req, res) => {
     const { title, urgency, type } = req.query;
 
-    let filteredTasks = tasks;
+    // Construct the SQL query to filter based on query parameters
+    const sql = 'SELECT * FROM tasks WHERE (title LIKE ? OR ? IS NULL) AND (urgency = ? OR ? IS NULL) AND (type = ? OR ? IS NULL)';
 
-    if (title) {
-        filteredTasks = filteredTasks.filter(task => task.title.toLowerCase().includes(title.toLowerCase()));
-    }
+    // Query the database with dynamic values, handling empty parameters
+    db.query(sql, [
+        `%${title || ''}%`, title || null,
+        urgency || null, urgency,
+        type || null, type
+    ], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Database error');
+        }
 
-    if (urgency) {
-        filteredTasks = filteredTasks.filter(task => task.urgency === urgency);
-    }
-
-    if (type) {
-        filteredTasks = filteredTasks.filter(task => task.type === type);
-    }
-
-    res.render('filter', { tasks: filteredTasks, urgency, type, title });
+        // Render the filter page with the filtered results
+        res.render('filter', { tasks: results, urgency, type, title });
+    });
 });
+
 
 // Start server
 const PORT = 3000;
