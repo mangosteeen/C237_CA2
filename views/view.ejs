@@ -108,18 +108,12 @@
                             <% } %>
                         </p>
 
-<<<<<<< HEAD
                         <% if (user.role === 'volunteer' && request.requestStatus === 'pending') { %>
                             <!-- Accept Request form -->
                             <form action="/acceptRequest/<%= request.id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-success mt-2">Accept Request</button>
                             </form>
                         <% } %>
-=======
-                        <p class="card-text">
-                            <strong>Status:</strong> <%= request.requestStatus %>
-                        </p>
->>>>>>> eff631b9ece9cfb4d6f2fe60d05cffa358aa7f92
 
                         <% if (request.id) { %>
                             <% if (user.role === 'volunteer') { %>
