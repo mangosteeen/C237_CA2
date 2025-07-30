@@ -27,7 +27,13 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1>View My Requests</h1>
+        <h1>
+        <% if (user.role === 'elderly') { %>
+            View My Requests
+        <% } else if (user.role === 'volunteer') { %>
+            View All Requests
+        <% } %>
+        </h1>
         <p>
             Welcome, <%= user.username %>
             <% if (user.role === 'elderly') { %> (👵 Elderly) <% } else { %> (🤝 Volunteer) <% } %>
@@ -77,10 +83,9 @@
 
         <!-- Navigation Buttons -->
         <div class="nav-buttons">
-            <% if (user.role === 'volunteer') { %>
-                <a href="/admin" class="btn btn-primary">Admin Dashboard</a>
+            <% if (user.role === 'elderly') { %>
+                <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <% } %>
-            <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <a href="/logout" class="btn btn-secondary">Logout</a>
         </div>
 
