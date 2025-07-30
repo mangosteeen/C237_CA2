@@ -105,7 +105,7 @@
 
                         <% if (user.role === 'volunteer' && request.requestStatus === 'pending') { %>
                             <!-- Accept Request form -->
-                            <form action="/acceptRequest/<%= request.id %>" method="POST">
+                            <form action="/acceptRequest/<%= request.id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-success mt-2">Accept Request</button>
                             </form>
                         <% } %>
