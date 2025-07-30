@@ -140,6 +140,7 @@ app.post('/login', (req, res) => {
 
 // --------------entong - View list of Request--------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
+  const { urgency, taskType } = req.query;  // get filter params from URL query
   let sql;
   let params = [];
 
@@ -148,23 +149,36 @@ app.get('/view', checkAuthenticated, (req, res) => {
     sql = 'SELECT * FROM requests WHERE LOWER(elderName) = LOWER(?)';
     params = [req.session.user.username];
   } else if (req.session.user.role === 'volunteer') {
-    sql = 'SELECT * FROM requests';
+    // Start with a base query
+    sql = 'SELECT * FROM requests WHERE 1=1'; // 1=1 to simplify appending AND conditions
+
+    // Add urgency filter if present
+    if (urgency) {
+      sql += ' AND urgency = ?';
+      params.push(urgency);
+    }
+
+    // Add taskType filter if present
+    if (taskType) {
+      sql += ' AND taskType = ?';
+      params.push(taskType);
+    }
   }
 
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).send('Database error');
 
     console.log('Fetched requests for user:', req.session.user.username);
-    console.log(results);  // Debug: see what requests come back
+    console.log(results);
 
     res.render('view', {
       user: req.session.user,
       userRequests: results,
-      messages: req.flash('success')
+      messages: req.flash('success'),
+      filters: { urgency, taskType } // pass current filter values to the view
     });
   });
 });
-
 
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
