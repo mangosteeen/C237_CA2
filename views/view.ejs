@@ -84,7 +84,6 @@
             <% } %>
             <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <a href="/filter" class="btn btn-info">Search / Filter Requests</a>
-            <a href="/approved" class="btn btn-warning">View Approved Requests</a> <!-- New Button for Approved Requests -->
             <a href="/logout" class="btn btn-secondary">Logout</a>
         </div>
 
@@ -111,8 +110,11 @@
                             <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
                             <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-outline-danger btn-sm">Delete</a>
                             <form action="/acceptRequest/<%= request.id %>" method="POST">
-                              <button type="submit" class="btn btn-success mt-2">Accept Request</button>
+                                <button type="submit" class="btn btn-success mt-2">Accept Request</button>
                             </form>
+                        <% } else if (user.role === 'elderly' && request.elderName === user.username && request.requestStatus === 'pending') { %>
+                            <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
+                            <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to cancel this request?')" class="btn btn-outline-danger btn-sm">Cancel</a>
                         <% } %>
                     </div>
                 </div>
