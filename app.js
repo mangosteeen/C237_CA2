@@ -319,20 +319,46 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 
 
 // POST route to handle status change (volunteer accepts)
+// POST route to handle status change (volunteer accepts)
 app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
     const newStatus = 'accepted'; // Volunteer accepting the request, status changes to accepted
 
     const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
-    connection.query(sql, [newStatus, requestId], (error, results) => {
+    db.query(sql, [newStatus, requestId], (error, results) => {  // Use 'db.query' instead of 'connection.query'
         if (error) {
             console.error("Error updating request status:", error);
             return res.status(500).send('Error updating status');
         } else {
             // Success, redirect to the page where volunteer can see requests or some confirmation page
-            res.redirect('/view');  // Redirect to some page
+            res.redirect('/view');  // Redirect to the view page after updating
         }
     });
+});
+
+
+// Approved request//
+// Route to view approved tasks
+app.get('/approved', checkAuthenticated, (req, res) => {
+  let sql;
+  let params = [];
+
+  if (req.session.user.role === 'elderly') {
+    sql = 'SELECT * FROM requests WHERE elderName = ? AND requestStatus = "approved"';
+    params = [req.session.user.username];
+  } else if (req.session.user.role === 'volunteer') {
+    // Volunteers see all approved requests
+    sql = 'SELECT * FROM requests WHERE requestStatus = "approved"';
+  }
+
+  db.query(sql, params, (err, results) => {
+    if (err) return res.status(500).send('Database error');
+
+    res.render('approvedRequests', {
+      user: req.session.user,
+      approvedRequests: results
+    });
+  });
 });
 
 
