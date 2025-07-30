@@ -261,12 +261,34 @@ app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
 });
 
 // ----------------------Quinn - Delete request------------------------------------------------------------
-app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
-  const sql = 'DELETE FROM requests WHERE id = ?';
-  db.query(sql, [req.params.id], (err) => {
-    if (err) req.flash('error', 'Error deleting request');
-    else req.flash('success', 'Request deleted');
-    res.redirect('/view');
+app.get('/requests/:id/delete', checkAuthenticated, (req, res) => {
+  const requestId = req.params.id;
+
+  const sql = 'SELECT * FROM requests WHERE id = ?';
+  db.query(sql, [requestId], (err, results) => {
+    if (err || results.length === 0) {
+      return res.status(404).send('Request not found');
+    }
+
+    const request = results[0];
+
+    // Allow delete if volunteer or if elderly owns the request and it's still pending
+    const isOwner = req.session.user.username === request.elderName;
+    const isPending = request.requestStatus === 'pending';
+
+    if (
+      (req.session.user.role === 'volunteer') ||
+      (req.session.user.role === 'elderly' && isOwner && isPending)
+    ) {
+      db.query('DELETE FROM requests WHERE id = ?', [requestId], (err) => {
+        if (err) req.flash('error', 'Error deleting request');
+        else req.flash('success', 'Request successfully cancelled.');
+        res.redirect('/view');
+      });
+    } else {
+      req.flash('error', 'You do not have permission to delete this request.');
+      res.redirect('/view');
+    }
   });
 });
 
