@@ -65,9 +65,10 @@
         <label for="taskType" class="form-label">Task Type</label>
         <select class="form-control" id="taskType" name="taskType" required>
           <option value="">-- Select Task Type --</option>
-          <option value="Shopping" <%= request.taskType === 'Shopping' ? 'selected' : '' %>>Shopping</option>
-          <option value="Cleaning" <%= request.taskType === 'Cleaning' ? 'selected' : '' %>>Cleaning</option>
-          <option value="Transport" <%= request.taskType === 'Transport' ? 'selected' : '' %>>Transport</option>
+          <option value="Grocery Shopping" <%= request.taskType === 'Grocery Shopping' ? 'selected' : '' %>>Grocery Shopping</option>
+          <option value="Medication Pickup" <%= request.taskType === 'Medication Pickup' ? 'selected' : '' %>>Medication Pickup</option>
+          <option value="House Cleaning" <%= request.taskType === 'House Cleaning' ? 'selected' : '' %>>House Cleaning</option>
+          <option value="Other" <%= formData && formData.taskType === 'Other' ? 'selected' : '' %>>Other</option>
         </select>
       </div>
 
