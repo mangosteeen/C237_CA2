@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Requests</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Approved Requests</h1>
+
+        <!-- Button to redirect to add new request -->
+        <a href="/addNewRequest" class="btn btn-success mb-3">Add New Request</a>
+
+        <% if (approvedRequests.length > 0) { %>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Task Type</th>
+                        <th>Description</th>
+                        <th>Urgency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% approvedRequests.forEach(function(request) { %>
+                        <tr>
+                            <td><%= request.elderName %></td>
+                            <td><%= request.taskType %></td>
+                            <td><%= request.description %></td>
+                            <td><%= request.urgency %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No approved requests available.</p>
+        <% } %>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
+
