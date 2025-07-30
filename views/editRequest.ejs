@@ -68,7 +68,7 @@
           <option value="Grocery Shopping" <%= request.taskType === 'Grocery Shopping' ? 'selected' : '' %>>Grocery Shopping</option>
           <option value="Medication Pickup" <%= request.taskType === 'Medication Pickup' ? 'selected' : '' %>>Medication Pickup</option>
           <option value="House Cleaning" <%= request.taskType === 'House Cleaning' ? 'selected' : '' %>>House Cleaning</option>
-          <option value="Other" <%= formData && formData.taskType === 'Other' ? 'selected' : '' %>>Other</option>
+          <option value="Other" <%= request.taskType === 'Other' ? 'selected' : '' %>>Other</option>
         </select>
       </div>
 
