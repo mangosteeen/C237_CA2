@@ -166,6 +166,7 @@ app.get('/view', checkAuthenticated, (req, res) => {
 });
 
 
+
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
 app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
     res.render('admin', { user: req.session.user });
