@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Conversation – Request #<%= request.id %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f8fb;
+    }
+    .chat-box {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    .message {
+      margin-bottom: 1.5rem;
+    }
+    .message .sender {
+      font-weight: 600;
+    }
+    .message .timestamp {
+      font-size: 0.8rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>Conversation – Request #<%= request.id %></h2>
+    <p><strong>Task:</strong> <%= request.taskType %></p>
+    <p><strong>Description:</strong> <%= request.description %></p>
+
+    <div class="chat-box mt-4">
+      <% if (messages.length === 0) { %>
+        <p class="text-muted">No messages yet. Start the conversation!</p>
+      <% } else { %>
+        <% messages.forEach(msg => { %>
+          <div class="message">
+            <div class="sender"><%= msg.sender %></div>
+            <div><%= msg.message %></div>
+            <div class="timestamp"><%= new Date(msg.created_at).toLocaleString() %></div>
+            <hr />
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <form action="/requests/<%= request.id %>/conversation" method="POST" class="mt-4">
+      <div class="mb-3">
+        <label for="message" class="form-label">Your Message</label>
+        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-success">Send</button>
+      <a href="/view" class="btn btn-outline-secondary">← Back to Requests</a>
+    </form>
+  </div>
+</body>
+</html>
