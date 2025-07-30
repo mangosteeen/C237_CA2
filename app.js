@@ -144,17 +144,20 @@ app.get('/view', checkAuthenticated, (req, res) => {
   let params = [];
 
   if (req.session.user.role === 'elderly') {
-    sql = 'SELECT * FROM requests WHERE elderName = ?';
+    // Case-insensitive match for elderName
+    sql = 'SELECT * FROM requests WHERE LOWER(elderName) = LOWER(?)';
     params = [req.session.user.username];
   } else if (req.session.user.role === 'volunteer') {
-    // Volunteers see all requests (or add your filtering logic)
     sql = 'SELECT * FROM requests';
   }
 
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).send('Database error');
 
-    res.render('view', { 
+    console.log('Fetched requests for user:', req.session.user.username);
+    console.log(results);  // Debug: see what requests come back
+
+    res.render('view', {
       user: req.session.user,
       userRequests: results,
       messages: req.flash('success')
@@ -269,48 +272,48 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-app.get('/view', checkAuthenticated, (req, res) => {
-    const { el, urgency, taskType } = req.query; // Get filters from query params
-    let sql = 'SELECT * FROM requests WHERE 1=1';
-    let queryValues = [];
+// app.get('/view', checkAuthenticated, (req, res) => {
+//     const { el, urgency, taskType } = req.query; // Get filters from query params
+//     let sql = 'SELECT * FROM requests WHERE 1=1';
+//     let queryValues = [];
 
-    // Apply filters based on query parameters
-    if (el && el.trim()) {
-        sql += ' AND elderName LIKE ?';
-        queryValues.push(`%${el}%`);
-    }
+//     // Apply filters based on query parameters
+//     if (el && el.trim()) {
+//         sql += ' AND elderName LIKE ?';
+//         queryValues.push(`%${el}%`);
+//     }
 
-    if (urgency) {
-        sql += ' AND urgency = ?';
-        queryValues.push(urgency);
-    }
+//     if (urgency) {
+//         sql += ' AND urgency = ?';
+//         queryValues.push(urgency);
+//     }
 
-    if (taskType) {
-        sql += ' AND taskType = ?';
-        queryValues.push(taskType);
-    }
+//     if (taskType) {
+//         sql += ' AND taskType = ?';
+//         queryValues.push(taskType);
+//     }
 
-    // Execute the query with the applied filters
-    db.query(sql, queryValues, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Database error');
-        }
+//     // Execute the query with the applied filters
+//     db.query(sql, queryValues, (err, results) => {
+//         if (err) {
+//             console.error(err);
+//             return res.status(500).send('Database error');
+//         }
 
-        // Get the result count
-        const resultCount = results.length;
+//         // Get the result count
+//         const resultCount = results.length;
 
-        // Render the view page with the filtered requests
-        res.render('filter', {
-            user: req.session.user,
-            userRequests: results,
-            el, // Pass the filter values back to the form
-            urgency,
-            taskType,
-            resultCount // Pass the result count to the template
-        });
-    });
-});
+//         // Render the view page with the filtered requests
+//         res.render('filter', {
+//             user: req.session.user,
+//             userRequests: results,
+//             el, // Pass the filter values back to the form
+//             urgency,
+//             taskType,
+//             resultCount // Pass the result count to the template
+//         });
+//     });
+// });
 
 
 
