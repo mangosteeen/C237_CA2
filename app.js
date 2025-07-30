@@ -245,10 +245,10 @@ app.post('/addNewRequest', (req, res) => {
 
 // --------------------Chia En - Edit/Update request------------------------------------------------------
 app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
+    const id = req.params.id;
     const sql = 'SELECT * FROM requests WHERE id = ?';
 
-    db.query(sql, [requestId], (error, results) => {
+    db.query(sql, [id], (error, results) => {
         if (error) throw error;
 
         if (results.length > 0) {
@@ -260,11 +260,11 @@ app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
 });
 
 app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
+    const id = req.params.id;
     const { elderName, taskType, description, urgency } = req.body;
 
     const sql = 'UPDATE requests SET elderName = ?, taskType = ?, description = ?, urgency = ? WHERE id = ?';
-    db.query(sql, [elderName, taskType, description, urgency, requestId], (error) => {
+    db.query(sql, [elderName, taskType, description, urgency, id], (error) => {
         if (error) {
             console.error("Error updating request:", error);
             res.status(500).send('Error updating request');
@@ -276,10 +276,10 @@ app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
 
 // ----------------------Quinn - Delete request------------------------------------------------------------
 app.get('/requests/:id/delete', checkAuthenticated, (req, res) => {
-  const requestId = req.params.id;
+  const id = req.params.id;
 
   const sql = 'SELECT * FROM requests WHERE id = ?';
-  db.query(sql, [requestId], (err, results) => {
+  db.query(sql, [id], (err, results) => {
     if (err || results.length === 0) {
       return res.status(404).send('Request not found');
     }
@@ -294,7 +294,7 @@ app.get('/requests/:id/delete', checkAuthenticated, (req, res) => {
       (req.session.user.role === 'volunteer') ||
       (req.session.user.role === 'elderly' && isOwner && isPending)
     ) {
-      db.query('DELETE FROM requests WHERE id = ?', [requestId], (err) => {
+      db.query('DELETE FROM requests WHERE id = ?', [id], (err) => {
         if (err) req.flash('error', 'Error deleting request');
         else req.flash('success', 'Request successfully cancelled.');
         res.redirect('/view');
@@ -353,16 +353,16 @@ app.get('/requests/:id/delete', checkAuthenticated, (req, res) => {
 
 // POST route to handle status change (volunteer accepts)
 app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
+    const id = req.params.id;
 
-    if (!requestId) {
+    if (!id) {
         return res.status(400).send('Request ID is missing');
     }
 
-    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?'; // 'id' is requestId in DB
+    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?'; // 'id' is id in DB
     const newStatus = 'approved';
 
-    db.query(sql, [newStatus, requestId], (err, result) => {
+    db.query(sql, [newStatus, id], (err, result) => {
         if (err) {
             console.error('Error updating request status:', err);
             return res.status(500).send('Database error');
