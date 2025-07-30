@@ -195,8 +195,11 @@ app.post('/addNewRequest', (req, res) => {
         });
     }
 
-    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency) VALUES (?, ?, ?, ?)';
-    db.query(sql, [name, taskType, description, urgency], (error, results) => {
+    const requestStatus = 'pending'; // Status is always 'pending' when created by elderly
+
+
+    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
             return res.render('addNewRequest', {
