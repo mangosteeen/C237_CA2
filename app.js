@@ -140,17 +140,28 @@ app.post('/login', (req, res) => {
 
 // --------------entong - View list of Request--------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
-    const sql = 'SELECT * FROM requests WHERE elderName = ?';
-    db.query(sql, [req.session.user.username], (err, results) => {
-        if (err) return res.status(500).send('Database error');
+  let sql;
+  let params = [];
 
-        res.render('view', { 
-        user: req.session.user,
-        userRequests: results,
-        messages: req.flash('success')
-        });
+  if (req.session.user.role === 'elderly') {
+    sql = 'SELECT * FROM requests WHERE elderName = ?';
+    params = [req.session.user.username];
+  } else if (req.session.user.role === 'volunteer') {
+    // Volunteers see all requests (or add your filtering logic)
+    sql = 'SELECT * FROM requests';
+  }
+
+  db.query(sql, params, (err, results) => {
+    if (err) return res.status(500).send('Database error');
+
+    res.render('view', { 
+      user: req.session.user,
+      userRequests: results,
+      messages: req.flash('success')
     });
+  });
 });
+
 
 //******** TODO: Insert code for admin route to render dashboard page for admin. ********//
 app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
