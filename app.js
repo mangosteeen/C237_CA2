@@ -402,6 +402,44 @@ app.get('/approved', checkAuthenticated, (req, res) => {
     });
 });
 
+// Set New password
+app.get('/reset-password', (req, res) => {
+    if (!req.session.resetEmail) {
+        req.flash('error', 'Session expired. Try again.');
+        return res.redirect('/forgot-password');
+    }
+
+    res.render('resetPassword', { errors: req.flash('error') });
+});
+
+// Reset-password
+app.post('/reset-password', (req, res) => {
+    const { password } = req.body;
+    const email = req.session.resetEmail;
+
+    if (!email) {
+        req.flash('error', 'Session expired.');
+        return res.redirect('/forgot-password');
+    }
+
+    if (!password || password.length < 6) {
+        req.flash('error', 'Password must be at least 6 characters.');
+        return res.redirect('/reset-password');
+    }
+
+    const sql = 'UPDATE users SET password = SHA1(?) WHERE email = ?';
+    db.query(sql, [password, email], (err, result) => {
+        if (err) {
+            req.flash('error', 'Error resetting password.');
+            return res.redirect('/reset-password');
+        }
+
+        // Clear session
+        req.session.resetEmail = null;
+        req.flash('success', 'Password reset successful. Please log in.');
+        res.redirect('/login');
+    });
+});
 
 
 //******** TODO: Start the server ********//
