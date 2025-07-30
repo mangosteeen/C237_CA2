@@ -141,7 +141,7 @@ app.post('/login', (req, res) => {
 // --------------entong - View list of Request--------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
     const userId = req.session.user.id;
-    const sql = 'SELECT * FROM requests';
+    const sql = 'SELECT * FROM requests WHERE elderId = ?';
 
     db.query(sql, [userId, req.session.user.role], (err, results) => {
         if (err) return res.status(500).send('Database error');
