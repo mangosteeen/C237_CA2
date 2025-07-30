@@ -177,12 +177,12 @@ app.get('/addNewRequest', checkAuthenticated, (req, res) => {
 
 // POST route to handle form submission
 app.post('/addNewRequest', (req, res) => {
-    const { name, taskType, description, urgency, requestStatus } = req.body;
+    const { name, taskType, description, urgency } = req.body;
 
     const errors = [];
 
     // Basic validation
-    if (!name || !taskType || !description || !urgency || !requestStatus) {
+    if (!name || !taskType || !description || !urgency ) {
         errors.push('All fields are required.');
     }
 
@@ -191,19 +191,19 @@ app.post('/addNewRequest', (req, res) => {
             user: req.session.user,
             errors,
             messages: [],
-            formData: { name, taskType, description, urgency, requestStatus }
+            formData: { name, taskType, description, urgency }
         });
     }
 
-    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
+    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency) VALUES (?, ?, ?, ?)';
+    db.query(sql, [name, taskType, description, urgency], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
             return res.render('addNewRequest', {
                 user: req.session.user,
                 errors: ['Database error: Unable to add request.'],
                 messages: [],
-                formData: { name, taskType, description, urgency, requestStatus }
+                formData: { name, taskType, description, urgency }
             });
         } else {
             // Success
