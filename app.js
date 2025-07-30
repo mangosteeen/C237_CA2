@@ -164,8 +164,8 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------Joanne - Add New request----------------------------------------------------------------------
-app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addRequest', {user: req.session.user } ); 
+app.get('/addNewRequest', checkAuthenticated, (req, res) => {
+    res.render('addNewRequest', {user: req.session.user } ); 
 });
 
 app.post('/addNewRequest', (req, res) => {
