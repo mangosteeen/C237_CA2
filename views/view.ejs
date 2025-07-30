@@ -29,9 +29,41 @@
     <div class="container mt-5">
         <h1>View My Requests</h1>
         <p>
-        Welcome, <%= user.username %> 
+        Welcome, <%= user.username %>
         <% if (user.role === 'elderly') { %> (👵 Elderly) <% } else { %> (🤝 Volunteer) <% } %>
         </p>
+
+        <% if (user.role==='volunteer' ) { %>
+            <form method="GET" action="/view" class="mb-4">
+                <div class="form-row align-items-end">
+                    <div class="col-auto">
+                        <label for="urgency">Filter by Urgency</label>
+                        <select id="urgency" name="urgency" class="form-control">
+                            <option value="">All</option>
+                            <option value="High" <%=filters && filters.urgency==='High' ? 'selected' : '' %>>High</option>
+                            <option value="Medium" <%=filters && filters.urgency==='Medium' ? 'selected' : '' %>>Medium</option>
+                            <option value="Low" <%=filters && filters.urgency==='Low' ? 'selected' : '' %>>Low</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <label for="taskType">Filter by Task Type</label>
+                        <select id="taskType" name="taskType" class="form-control">
+                            <option value="">All</option>
+                            <option value="Grocery Shopping" <%=filters && filters.taskType==='Grocery Shopping' ? 'selected'
+                                : '' %>>Grocery Shopping</option>
+                            <option value="Medication Pickup" <%=filters && filters.taskType==='Medication Pickup' ? 'selected'
+                                : '' %>>Medication Pickup</option>
+                            <option value="House Cleaning" <%=filters && filters.taskType==='House Cleaning' ? 'selected' : ''
+                                %>>House Cleaning</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Apply Filter</button>
+                        <a href="/view" class="btn btn-secondary">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <% } %>
 
         <!-- ✅ Flash Success Message -->
         <% if (messages && messages.length > 0) { %>
