@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 //******** TODO: Set up middleware *********//
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 app.use(session({
@@ -164,8 +164,9 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------Joanne - Add New request----------------------------------------------------------------------
-app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addRequest', {
+// GET route to show the add request form
+app.get('/addNewRequest', checkAuthenticated, (req, res) => {
+    res.render('addNewRequest', {
         user: req.session.user,
         errors: [],
         messages: [],
@@ -173,41 +174,44 @@ app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
     });
 });
 
+// POST route to handle form submission
 app.post('/addNewRequest', (req, res) => {
     const { name, taskType, description, urgency, requestStatus } = req.body;
 
-    // Basic validation example (you can expand this)
     const errors = [];
+
+    // Basic validation
     if (!name || !taskType || !description || !urgency || !requestStatus) {
         errors.push('All fields are required.');
     }
 
     if (errors.length > 0) {
-        // If validation fails, re-render the form with errors and previous inputs
-        res.render('addRequest', {
+        return res.render('addNewRequest', {
             user: req.session.user,
             errors,
             messages: [],
             formData: { name, taskType, description, urgency, requestStatus }
         });
-        return; // Stop execution here
     }
 
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-
     connection.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
-            // Render with error message, keeping form data
-            res.render('addRequest', {
+            return res.render('addNewRequest', {
                 user: req.session.user,
-                errors: ['Database error: Unable to add request. Please try again later.'],
+                errors: ['Database error: Unable to add request.'],
                 messages: [],
                 formData: { name, taskType, description, urgency, requestStatus }
             });
         } else {
-            // Success: redirect or show success message
-            res.redirect('/view'); // or you could render with a success message
+            // Success
+            res.render('addNewRequest', {
+                user: req.session.user,
+                errors: [],
+                messages: ['Request added successfully!'],
+                formData: {}
+            });
         }
     });
 });
