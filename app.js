@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 //******** TODO: Set up middleware *********//
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 app.use(session({
