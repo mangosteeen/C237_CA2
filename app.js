@@ -354,17 +354,25 @@ app.get('/requests/:id/delete', checkAuthenticated, (req, res) => {
 // POST route to handle status change (volunteer accepts)
 app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
-    const newStatus = 'accepted'; // Volunteer accepting the request, status changes to accepted
 
-    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
-    db.query(sql, [newStatus, requestId], (error, results) => {  // Use 'db.query' instead of 'connection.query'
-        if (error) {
-            console.error("Error updating request status:", error);
-            return res.status(500).send('Error updating status');
-        } else {
-            // Success, redirect to the page where volunteer can see requests or some confirmation page
-            res.redirect('/view');  // Redirect to the view page after updating
+    if (!requestId) {
+        return res.status(400).send('Request ID is missing');
+    }
+
+    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?'; // 'id' is requestId in DB
+    const newStatus = 'approved';
+
+    db.query(sql, [newStatus, requestId], (err, result) => {
+        if (err) {
+            console.error('Error updating request status:', err);
+            return res.status(500).send('Database error');
         }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Request not found');
+        }
+
+        res.redirect('/approved'); // Redirect after successful update
     });
 });
 
@@ -394,22 +402,6 @@ app.get('/approved', checkAuthenticated, (req, res) => {
     });
 });
 
-// POST route to handle status change (volunteer accepts)
-app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
-    const newStatus = 'approved'; // Update status to approved
-
-    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
-    db.query(sql, [newStatus, requestId], (error, results) => {
-        if (error) {
-            console.error("Error updating request status:", error);
-            return res.status(500).send('Error updating status');
-        } else {
-            // After accepting, redirect to the approved list page
-            res.redirect('/approved');  // Redirect to approved requests page
-        }
-    });
-});
 
 
 //******** TODO: Start the server ********//
