@@ -402,6 +402,44 @@ app.get('/approved', checkAuthenticated, (req, res) => {
     });
 });
 
+// Forgot-password
+// Show Forgot Password page
+app.get('/forgot-password', (req, res) => {
+    res.render('forgotPassword', {
+        errors: req.flash('error'),
+        messages: req.flash('success')
+    });
+});
+
+// Handle email submission
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        req.flash('error', 'Email is required.');
+        return res.redirect('/forgot-password');
+    }
+
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    db.query(sql, [email], (err, results) => {
+        if (err) {
+            req.flash('error', 'Database error.');
+            return res.redirect('/forgot-password');
+        }
+
+        if (results.length === 0) {
+            req.flash('error', 'No account found with that email.');
+            return res.redirect('/forgot-password');
+        }
+
+        // Save the email temporarily for the reset-password flow
+        req.session.resetEmail = email;
+        req.flash('success', 'Email verified. Please reset your password.');
+        res.redirect('/reset-password');
+    });
+});
+
+
 // Set New password
 app.get('/reset-password', (req, res) => {
     if (!req.session.resetEmail) {
