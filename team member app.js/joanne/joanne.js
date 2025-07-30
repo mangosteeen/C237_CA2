@@ -1,21 +1,47 @@
 app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addRequest', {user: req.session.user } ); 
+    res.render('addRequest', {
+        user: req.session.user,
+        errors: [],
+        messages: [],
+        formData: {}
+    });
 });
 
 app.post('/addNewRequest', (req, res) => {
-    // Extract request data from the request body
     const { name, taskType, description, urgency, requestStatus } = req.body;
-   
+
+    // Basic validation example (you can expand this)
+    const errors = [];
+    if (!name || !taskType || !description || !urgency || !requestStatus) {
+        errors.push('All fields are required.');
+    }
+
+    if (errors.length > 0) {
+        // If validation fails, re-render the form with errors and previous inputs
+        res.render('addRequest', {
+            user: req.session.user,
+            errors,
+            messages: [],
+            formData: { name, taskType, description, urgency, requestStatus }
+        });
+        return; // Stop execution here
+    }
+
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    // Insert the new request into the database
-    connection.query(sql , [name, taskType, description, urgency, requestStatus], (error, results) => {
+
+    connection.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
-            // Handle any error that occurs during the database operation
             console.error("Error adding request:", error);
-            res.status(500).send('Error adding request');
+            // Render with error message, keeping form data
+            res.render('addRequest', {
+                user: req.session.user,
+                errors: ['Database error: Unable to add request. Please try again later.'],
+                messages: [],
+                formData: { name, taskType, description, urgency, requestStatus }
+            });
         } else {
-            // Send a success response
-            res.redirect('/');
+            // Success: redirect or show success message
+            res.redirect('/'); // or you could render with a success message
         }
     });
 });
