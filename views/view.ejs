@@ -85,12 +85,18 @@
         </div>
 
         <!-- List of Requests -->
-        <% if (userRequests && userRequests.length > 0) { %>
+       <% if (userRequests && userRequests.length > 0) { %>
             <% userRequests.forEach(request => { %>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title"><%= request.elderName %> - <%= request.taskType %></h5>
-                        <p class="card-text"><strong>Description:</strong> <%= request.description %></p>
+                        <h5 class="card-title">
+                            <%= request.elderName %> - <%= request.taskType %>
+                        </h5>
+
+                        <p class="card-text">
+                            <strong>Description:</strong> <%= request.description %>
+                        </p>
+
                         <p class="card-text">
                             <strong>Urgency:</strong>
                             <% if (request.urgency === 'High') { %>
@@ -101,21 +107,37 @@
                                 <span class="badge badge-success">Low</span>
                             <% } %>
                         </p>
-                        <p class="card-text"><strong>Status:</strong> <%= request.requestStatus %></p>
 
+<<<<<<< HEAD
                         <% if (user.role === 'volunteer' && request.requestStatus === 'pending') { %>
                             <!-- Accept Request form -->
                             <form action="/acceptRequest/<%= request.id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-success mt-2">Accept Request</button>
                             </form>
                         <% } %>
+=======
+                        <p class="card-text">
+                            <strong>Status:</strong> <%= request.requestStatus %>
+                        </p>
+>>>>>>> eff631b9ece9cfb4d6f2fe60d05cffa358aa7f92
 
-                        <% if (user.role === 'volunteer') { %>
-                            <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
-                            <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-outline-danger btn-sm">Delete</a>
-                        <% } else if (user.role === 'elderly' && request.elderName === user.username && request.requestStatus === 'pending') { %>
-                            <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
-                            <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to cancel this request?')" class="btn btn-outline-danger btn-sm">Cancel</a>
+                        <% if (request.id) { %>
+                            <% if (user.role === 'volunteer') { %>
+                                <% if (request.requestStatus === 'pending') { %>
+                                    <form action="/acceptRequest/<%= request.id %>" method="POST">
+                                        <button type="submit" class="btn btn-success mt-2">Accept Request</button>
+                                    </form>
+                                <% } else { %>
+                                    <button class="btn btn-secondary mt-2" disabled>Already Accepted</button>
+                                <% } %>
+                            <% } else if (user.role === 'elderly' && request.elderName === user.username && request.requestStatus === 'pending') { %>
+                                <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
+                                <a href="/requests/<%= request.id %>/delete"
+                                onclick="return confirm('Are you sure you want to cancel this request?')"
+                                class="btn btn-outline-danger btn-sm">Cancel</a>
+                            <% } %>
+                        <% } else { %>
+                            <p class="text-danger">Error: Missing request ID.</p>
                         <% } %>
                     </div>
                 </div>
@@ -123,7 +145,6 @@
         <% } else { %>
             <div class="alert alert-info">You have no requests currently.</div>
         <% } %>
-    </div>
 
     <!-- JS for Alert Auto-dismiss -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
