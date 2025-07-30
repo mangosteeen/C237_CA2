@@ -263,46 +263,49 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 });
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-app.get('/filter', checkAuthenticated, (req, res) => {
-    const { el, urgency, taskType } = req.query; // Renamed 'title' to 'el' for Elder's Name
-
-    let sql = 'SELECT * FROM requests WHERE 1=1'; // Change 'tasks' to 'requests' to match your table
+app.get('/view', checkAuthenticated, (req, res) => {
+    const { el, urgency, taskType } = req.query; // Get filters from query params
+    let sql = 'SELECT * FROM requests WHERE 1=1';
     let queryValues = [];
 
-    // Filter by Elder's Name (el)
-    if (el) {
+    // Apply filters based on query parameters
+    if (el && el.trim()) {
         sql += ' AND elderName LIKE ?';
         queryValues.push(`%${el}%`);
     }
 
-    // Filter by Urgency
     if (urgency) {
         sql += ' AND urgency = ?';
         queryValues.push(urgency);
     }
 
-    // Filter by Task Type
     if (taskType) {
         sql += ' AND taskType = ?';
         queryValues.push(taskType);
     }
 
-    // Execute the query to get the filtered results
+    // Execute the query with the applied filters
     db.query(sql, queryValues, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Database error');
         }
 
-        // Render the results to the filter page with the applied filters
-        res.render('filter', { 
-            tasks: results, 
-            el,  // Pass 'el' for the elder's name filter to maintain the input field value
-            urgency, 
-            taskType 
+        // Get the result count
+        const resultCount = results.length;
+
+        // Render the view page with the filtered requests
+        res.render('filter', {
+            user: req.session.user,
+            userRequests: results,
+            el, // Pass the filter values back to the form
+            urgency,
+            taskType,
+            resultCount // Pass the result count to the template
         });
     });
 });
+
 
 
 // POST route to handle status change (volunteer accepts)
