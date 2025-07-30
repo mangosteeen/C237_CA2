@@ -1,7 +1,7 @@
 <form action="/filter" method="GET">
     <!-- Search Bar -->
-    <label for="title">Search by Title:</label>
-    <input type="text" name="title" id="title" value="<%= title %>">
+    <label for="el">Search by Elder's Name:</label>
+    <input type="text" name="el" id="el" value="<%= el %>">
 
     <!-- Filter Dropdowns -->
     <label for="urgency">Filter by Urgency:</label>
@@ -12,12 +12,12 @@
         <option value="Low" <%= urgency === 'Low' ? 'selected' : '' %>>Low</option>
     </select>
 
-    <label for="type">Filter by Task Type:</label>
-    <select name="type" id="type">
+    <label for="taskType">Filter by Task Type:</label>
+    <select name="taskType" id="taskType">
         <option value="">All</option>
-        <option value="Appointment" <%= type === 'Appointment' ? 'selected' : '' %>>Appointment</option>
-        <option value="Medication" <%= type === 'Medication' ? 'selected' : '' %>>Medication</option>
-        <option value="Exercise" <%= type === 'Exercise' ? 'selected' : '' %>>Exercise</option>
+        <option value="Appointment" <%= taskType === 'Appointment' ? 'selected' : '' %>>Appointment</option>
+        <option value="Medication" <%= taskType === 'Medication' ? 'selected' : '' %>>Medication</option>
+        <option value="Exercise" <%= taskType === 'Exercise' ? 'selected' : '' %>>Exercise</option>
     </select>
 
     <button type="submit">Apply Filters</button>
@@ -26,6 +26,7 @@
 <!-- Display filtered tasks -->
 <ul>
     <% tasks.forEach(task => { %>
-        <li><%= task.title %> - <%= task.urgency %> - <%= task.type %></li>
+        <li><%= task.elderName %> - <%= task.urgency %> - <%= task.taskType %></li>
     <% }) %>
 </ul>
+
