@@ -207,7 +207,7 @@ app.post('/addNewRequest', (req, res) => {
             });
         } else {
             // Success: redirect or show success message
-            res.redirect('/'); // or you could render with a success message
+            res.redirect('/view'); // or you could render with a success message
         }
     });
 });
