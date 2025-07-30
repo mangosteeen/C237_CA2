@@ -75,9 +75,11 @@
 
     <form action="/addNewRequest" method="POST">
 
+      <!-- Elderly name is displayed but read-only -->
       <div class="mb-3">
-        <label for="name" class="form-label">Elderly's Name</label>
-        <input type="text" class="form-control" id="name" name="name" required value="<%= formData ? formData.name : '' %>"/>
+        <label class="form-label">Elderly's Name</label>
+        <input type="text" class="form-control" value="<%= user.username %>" readonly />
+        <input type="hidden" name="name" value="<%= user.username %>">
       </div>
 
       <div class="mb-3">
@@ -110,9 +112,12 @@
         <button type="submit" class="btn btn-primary">Add New Request</button>
       </div>
 
+      <div class="text-center mt-3">
+        <a href="/view" class="btn btn-outline-secondary">← Back to Home</a>
+      </div>
+
     </form>
   </div>
 
 </body>
 </html>
-
