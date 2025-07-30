@@ -169,10 +169,10 @@ app.get('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
 });
 
 app.post('/addNewRequest', checkAuthenticated, checkAdmin, (req, res) => {
-    const { name, taskType, description, urgency, requestStatus } = req.body;
+    const { elderName, taskType, description, urgency, requestStatus } = req.body;
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
 
-    db.query(sql, [name, taskType, description, urgency, requestStatus], (error) => {
+    db.query(sql, [elderName, taskType, description, urgency, requestStatus], (error) => {
         if (error) {
             console.error("Error adding request:", error);
             res.status(500).send('Error adding request');
