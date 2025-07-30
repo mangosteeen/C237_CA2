@@ -338,27 +338,45 @@ app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
 
 
 // Approved request//
-// Route to view approved tasks
+// Route to view approved requests
 app.get('/approved', checkAuthenticated, (req, res) => {
-  let sql;
-  let params = [];
+    let sql;
+    let params = [];
 
-  if (req.session.user.role === 'elderly') {
-    sql = 'SELECT * FROM requests WHERE elderName = ? AND requestStatus = "approved"';
-    params = [req.session.user.username];
-  } else if (req.session.user.role === 'volunteer') {
-    // Volunteers see all approved requests
-    sql = 'SELECT * FROM requests WHERE requestStatus = "approved"';
-  }
+    // If the user is elderly, show their approved requests only
+    if (req.session.user.role === 'elderly') {
+        sql = 'SELECT * FROM requests WHERE elderName = ? AND requestStatus = "approved"';
+        params = [req.session.user.username];
+    } else if (req.session.user.role === 'volunteer') {
+        // Volunteers can see all approved requests
+        sql = 'SELECT * FROM requests WHERE requestStatus = "approved"';
+    }
 
-  db.query(sql, params, (err, results) => {
-    if (err) return res.status(500).send('Database error');
+    db.query(sql, params, (err, results) => {
+        if (err) return res.status(500).send('Database error');
 
-    res.render('approvedRequests', {
-      user: req.session.user,
-      approvedRequests: results
+        res.render('approvedRequests', {
+            user: req.session.user,
+            approvedRequests: results  // Display approved requests
+        });
     });
-  });
+});
+
+// POST route to handle status change (volunteer accepts)
+app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
+    const requestId = req.params.id;
+    const newStatus = 'approved'; // Update status to approved
+
+    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
+    db.query(sql, [newStatus, requestId], (error, results) => {
+        if (error) {
+            console.error("Error updating request status:", error);
+            return res.status(500).send('Error updating status');
+        } else {
+            // After accepting, redirect to the approved list page
+            res.redirect('/approved');  // Redirect to approved requests page
+        }
+    });
 });
 
 
