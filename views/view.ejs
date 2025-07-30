@@ -77,10 +77,9 @@
 
         <!-- Navigation Buttons -->
         <div class="nav-buttons">
-            <% if (user.role === 'volunteer') { %>
-                <a href="/admin" class="btn btn-primary">Admin Dashboard</a>
+            <% if (user.role === 'elderly') { %>
+                <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <% } %>
-            <a href="/addNewRequest" class="btn btn-success">Add New Request</a>
             <a href="/logout" class="btn btn-secondary">Logout</a>
         </div>
 
