@@ -264,34 +264,46 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 
 // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
 app.get('/filter', checkAuthenticated, (req, res) => {
-    const { title, urgency, type } = req.query;
+    const { el, urgency, taskType } = req.query; // Renamed 'title' to 'el' for Elder's Name
 
-    let sql = 'SELECT * FROM tasks WHERE 1=1';
+    let sql = 'SELECT * FROM requests WHERE 1=1'; // Change 'tasks' to 'requests' to match your table
     let queryValues = [];
 
-    if (title) {
-        sql += ' AND title LIKE ?';
-        queryValues.push(`%${title}%`);
+    // Filter by Elder's Name (el)
+    if (el) {
+        sql += ' AND elderName LIKE ?';
+        queryValues.push(`%${el}%`);
     }
 
+    // Filter by Urgency
     if (urgency) {
         sql += ' AND urgency = ?';
         queryValues.push(urgency);
     }
 
-    if (type) {
-        sql += ' AND type = ?';
-        queryValues.push(type);
+    // Filter by Task Type
+    if (taskType) {
+        sql += ' AND taskType = ?';
+        queryValues.push(taskType);
     }
 
+    // Execute the query to get the filtered results
     db.query(sql, queryValues, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Database error');
         }
-        res.render('filter', { tasks: results, title, urgency, type });
+
+        // Render the results to the filter page with the applied filters
+        res.render('filter', { 
+            tasks: results, 
+            el,  // Pass 'el' for the elder's name filter to maintain the input field value
+            urgency, 
+            taskType 
+        });
     });
 });
+
 
 //******** TODO: Start the server ********//
 const PORT = 3000;
