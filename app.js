@@ -196,7 +196,7 @@ app.post('/addNewRequest', (req, res) => {
     }
 
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    connection.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
+    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
             return res.render('addNewRequest', {
