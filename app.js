@@ -403,7 +403,7 @@ app.get('/approved', checkAuthenticated, (req, res) => {
 });
 
 // ------------------Message-----------------------------------
-app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
+app.get('/requests/:id/conversation', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
 
     const requestSql = 'SELECT * FROM requests WHERE id = ?';
@@ -415,7 +415,7 @@ app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
         db.query(messageSql, [requestId], (err2, messages) => {
             if (err2) return res.status(500).send('Error fetching messages');
 
-            res.render('thread', {
+            res.render('conversation', {
                 request: requestResult[0],
                 messages,
                 user: req.session.user
@@ -424,15 +424,15 @@ app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
     });
 });
 
-app.post('/requests/:id/messages', checkAuthenticated, (req, res) => {
+app.post('/requests/:id/conversation', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
     const { message } = req.body;
     const sender = req.session.user.username;
 
-    const sql = 'INSERT INTO messages (request_id, sender, message) VALUES (?, ?, ?)';
-    db.query(sql, [requestId, sender, message], (err) => {
+    const insertSql = 'INSERT INTO messages (request_id, sender, message) VALUES (?, ?, ?)';
+    db.query(insertSql, [requestId, sender, message], (err) => {
         if (err) return res.status(500).send('Error saving message');
-        res.redirect(`/requests/${requestId}/messages`);
+        res.redirect(`/requests/${requestId}/conversation`);
     });
 });
 
