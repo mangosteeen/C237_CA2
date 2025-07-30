@@ -145,8 +145,9 @@ app.get('/view', checkAuthenticated, (req, res) => {
         if (err) return res.status(500).send('Database error');
 
         res.render('view', { 
-            user: req.session.user,
-            userRequests: results 
+        user: req.session.user,
+        userRequests: results,
+        messages: req.flash('success')
         });
     });
 });
@@ -208,12 +209,8 @@ app.post('/addNewRequest', (req, res) => {
             });
         } else {
             // Success
-            res.render('addNewRequest', {
-                user: req.session.user,
-                errors: [],
-                messages: ['Request added successfully!'],
-                formData: {}
-            });
+            req.flash('success', 'Request added successfully!');
+            res.redirect('/view');
         }
     });
 });

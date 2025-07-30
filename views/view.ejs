@@ -33,6 +33,18 @@
         <% if (user.role === 'elderly') { %> (👵 Elderly) <% } else { %> (🤝 Volunteer) <% } %>
         </p>
 
+        <!-- ✅ Flash Success Message -->
+        <% if (messages && messages.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <% messages.forEach(function(msg) { %>
+              <p class="mb-0"><%= msg %></p>
+            <% }) %>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <% } %>
+
         <!-- Navigation Buttons -->
         <div class="nav-buttons">
             <% if (user.role === 'volunteer') { %>
@@ -66,16 +78,28 @@
                             <a href="/requests/<%= request.id %>/edit" class="btn btn-outline-primary btn-sm">Edit</a>
                             <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to delete this?')" class="btn btn-outline-danger btn-sm">Delete</a>
                             <form action="/acceptRequest/<%= request.id %>" method="POST">
-                            <button type="submit" class="btn btn-success">Accept Request</button>
-                        </form>
+                              <button type="submit" class="btn btn-success mt-2">Accept Request</button>
+                            </form>
                         <% } %>
                     </div>
-                
                 </div>
             <% }) %>
         <% } else { %>
             <div class="alert alert-info">You have no requests currently.</div>
         <% } %>
     </div>
+
+    <!-- ✅ Bootstrap JS + Auto-dismiss -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+          alert.classList.remove('show');
+          alert.classList.add('fade');
+        }
+      }, 3000); // 3 seconds
+    </script>
 </body>
 </html>
