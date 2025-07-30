@@ -54,11 +54,11 @@
   <div class="container">
     <h1>Edit Request</h1>
 
-    <form action="/requests/<%= request.id %>/update" method="POST">
+    <form action="/requests/<%= request.requestId %>/update" method="POST">
 
       <div class="mb-3">
         <label for="elderName" class="form-label">Elderly's Name</label>
-        <input type="text" class="form-control" id="elderName" name="elderName" required value="<%= request.elderName %>"/>
+        <input type="text" class="form-control" id="elderName" name="elderName" value="<%= request.elderName %>" readonly />
       </div>
 
       <div class="mb-3">
@@ -68,13 +68,13 @@
           <option value="Grocery Shopping" <%= request.taskType === 'Grocery Shopping' ? 'selected' : '' %>>Grocery Shopping</option>
           <option value="Medication Pickup" <%= request.taskType === 'Medication Pickup' ? 'selected' : '' %>>Medication Pickup</option>
           <option value="House Cleaning" <%= request.taskType === 'House Cleaning' ? 'selected' : '' %>>House Cleaning</option>
-          <option value="Other" <%= formData && formData.taskType === 'Other' ? 'selected' : '' %>>Other</option>
+          <option value="Other" <%= request.taskType === 'Other' ? 'selected' : '' %>>Other</option>
         </select>
       </div>
 
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <input type="text" class="form-control" id="description" name="description" required value="<%= request.description %>"/>
+        <input type="text" class="form-control" id="description" name="description" required value="<%= request.description %>" />
       </div>
 
       <div class="mb-4">
