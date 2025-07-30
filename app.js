@@ -442,13 +442,12 @@ app.post('/forgot-password', (req, res) => {
 
 // Set New password
 app.get('/reset-password', (req, res) => {
-    if (!req.session.resetEmail) {
-        req.flash('error', 'Session expired. Try again.');
-        return res.redirect('/forgot-password');
-    }
-
-    res.render('resetPassword', { errors: req.flash('error') });
+    res.render('resetPassword', {
+        errors: req.flash('error'),
+        messages: req.flash('success')
+    });
 });
+
 
 // Reset-password
 app.post('/reset-password', (req, res) => {
