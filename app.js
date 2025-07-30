@@ -305,6 +305,24 @@ app.get('/filter', checkAuthenticated, (req, res) => {
 });
 
 
+// POST route to handle status change (volunteer accepts)
+app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
+    const requestId = req.params.id;
+    const newStatus = 'accepted'; // Volunteer accepting the request, status changes to accepted
+
+    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
+    connection.query(sql, [newStatus, requestId], (error, results) => {
+        if (error) {
+            console.error("Error updating request status:", error);
+            return res.status(500).send('Error updating status');
+        } else {
+            // Success, redirect to the page where volunteer can see requests or some confirmation page
+            res.redirect('/view');  // Redirect to some page
+        }
+    });
+});
+
+
 //******** TODO: Start the server ********//
 const PORT = 3000;
 app.listen(PORT, () => {
