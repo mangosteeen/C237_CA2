@@ -191,12 +191,12 @@ app.get('/addNewRequest', checkAuthenticated, (req, res) => {
 
 // POST route to handle form submission
 app.post('/addNewRequest', (req, res) => {
-    const { name, taskType, description, urgency } = req.body;
+    const { taskType, description, urgency } = req.body;
+    const name = req.session.user.username; // Fix: use logged-in user's name
 
     const errors = [];
 
-    // Basic validation
-    if (!name || !taskType || !description || !urgency ) {
+    if (!taskType || !description || !urgency) {
         errors.push('All fields are required.');
     }
 
@@ -205,14 +205,13 @@ app.post('/addNewRequest', (req, res) => {
             user: req.session.user,
             errors,
             messages: [],
-            formData: { name, taskType, description, urgency }
+            formData: { taskType, description, urgency }
         });
     }
 
-    const requestStatus = 'pending'; // Status is always 'pending' when created by elderly
-
-
+    const requestStatus = 'pending';
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
+
     db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
@@ -220,10 +219,9 @@ app.post('/addNewRequest', (req, res) => {
                 user: req.session.user,
                 errors: ['Database error: Unable to add request.'],
                 messages: [],
-                formData: { name, taskType, description, urgency }
+                formData: { taskType, description, urgency }
             });
         } else {
-            // Success
             req.flash('success', 'Request added successfully!');
             res.redirect('/view');
         }
