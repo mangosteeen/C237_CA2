@@ -33,6 +33,7 @@
         <% if (user.role === 'elderly') { %> (👵 Elderly) <% } else { %> (🤝 Volunteer) <% } %>
         </p>
 
+<!-- Filter by urgency and task type for volunteer -->
         <% if (user.role==='volunteer' ) { %>
             <form method="GET" action="/view" class="mb-4">
                 <div class="form-row align-items-end">
