@@ -315,8 +315,6 @@ app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
 // });
 
 
-
-// POST route to handle status change (volunteer accepts)
 // POST route to handle status change (volunteer accepts)
 app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
