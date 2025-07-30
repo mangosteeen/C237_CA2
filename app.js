@@ -402,8 +402,83 @@ app.get('/approved', checkAuthenticated, (req, res) => {
     });
 });
 
+// Forgot-password
+// Show Forgot Password page
+app.get('/forgot-password', (req, res) => {
+    res.render('forgotPassword', {
+        errors: req.flash('error'),
+        messages: req.flash('success')
+    });
+});
+
+// Handle email submission
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        req.flash('error', 'Email is required.');
+        return res.redirect('/forgot-password');
+    }
+
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    db.query(sql, [email], (err, results) => {
+        if (err) {
+            req.flash('error', 'Database error.');
+            return res.redirect('/forgot-password');
+        }
+
+        if (results.length === 0) {
+            req.flash('error', 'No account found with that email.');
+            return res.redirect('/forgot-password');
+        }
+
+        // Save the email temporarily for the reset-password flow
+        req.session.resetEmail = email;
+        req.flash('success', 'Email verified. Please reset your password.');
+        res.redirect('/reset-password');
+    });
+});
+
+
+// Set New password
+app.get('/reset-password', (req, res) => {
+    res.render('resetPassword', {
+        errors: req.flash('error'),
+        messages: req.flash('success')
+    });
+});
+
+
+// Reset-password
+app.post('/reset-password', (req, res) => {
+    const { password } = req.body;
+    const email = req.session.resetEmail;
+
+    if (!email) {
+        req.flash('error', 'Session expired.');
+        return res.redirect('/forgot-password');
+    }
+
+    if (!password || password.length < 6) {
+        req.flash('error', 'Password must be at least 6 characters.');
+        return res.redirect('/reset-password');
+    }
+
+    const sql = 'UPDATE users SET password = SHA1(?) WHERE email = ?';
+    db.query(sql, [password, email], (err, result) => {
+        if (err) {
+            req.flash('error', 'Error resetting password.');
+            return res.redirect('/reset-password');
+        }
+
+        // Clear session
+        req.session.resetEmail = null;
+        req.flash('success', 'Password reset successful. Please log in.');
+        res.redirect('/login');
+    });
+});
 // ------------------Message-----------------------------------
-app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
+app.get('/requests/:id/conversation', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
 
     const requestSql = 'SELECT * FROM requests WHERE id = ?';
@@ -415,7 +490,7 @@ app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
         db.query(messageSql, [requestId], (err2, messages) => {
             if (err2) return res.status(500).send('Error fetching messages');
 
-            res.render('thread', {
+            res.render('conversation', {
                 request: requestResult[0],
                 messages,
                 user: req.session.user
@@ -424,15 +499,15 @@ app.get('/requests/:id/thread', checkAuthenticated, (req, res) => {
     });
 });
 
-app.post('/requests/:id/messages', checkAuthenticated, (req, res) => {
+app.post('/requests/:id/conversation', checkAuthenticated, (req, res) => {
     const requestId = req.params.id;
     const { message } = req.body;
     const sender = req.session.user.username;
 
-    const sql = 'INSERT INTO messages (request_id, sender, message) VALUES (?, ?, ?)';
-    db.query(sql, [requestId, sender, message], (err) => {
+    const insertSql = 'INSERT INTO messages (request_id, sender, message) VALUES (?, ?, ?)';
+    db.query(insertSql, [requestId, sender, message], (err) => {
         if (err) return res.status(500).send('Error saving message');
-        res.redirect(`/requests/${requestId}/messages`);
+        res.redirect(`/requests/${requestId}/conversation`);
     });
 });
 
