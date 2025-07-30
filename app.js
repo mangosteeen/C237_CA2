@@ -511,6 +511,75 @@ app.post('/requests/:id/conversation', checkAuthenticated, (req, res) => {
     });
 });
 
+// --------------------------------profile---------------------------------------
+// Route to display user profile
+app.get('/profile', checkAuthenticated, (req, res) => {
+  const user = req.session.user;
+  res.render('profile', { user: user, messages: req.flash('success') });
+});
+
+// Route to handle profile updates
+app.post('/profile', checkAuthenticated, (req, res) => {
+  const { email, contact, address, password } = req.body;
+  const userId = req.session.user.id;
+
+  // Basic validation
+  if (!email || !contact || !address) {
+    req.flash('error', 'All fields are required.');
+    return res.redirect('/profile');
+  }
+
+  // Update password if provided
+  let updateQuery = 'UPDATE users SET email = ?, contact = ?, address = ?';
+  let updateParams = [email, contact, address];
+
+  if (password) {
+    // If a new password is provided, hash it and update the password
+    updateQuery += ', password = SHA1(?)';
+    updateParams.push(password);
+  }
+
+  updateQuery += ' WHERE id = ?';
+  updateParams.push(userId);
+
+  db.query(updateQuery, updateParams, (err, result) => {
+    if (err) {
+      req.flash('error', 'Error updating profile.');
+      return res.redirect('/profile');
+    }
+
+    req.session.user.email = email; // Update session with new email
+    req.session.user.contact = contact; // Update session with new contact
+    req.session.user.address = address; // Update session with new address
+
+    req.flash('success', 'Profile updated successfully!');
+    res.redirect('/profile');
+  });
+});
+
+// In your login POST route
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    req.flash('error', 'All fields are required.');
+    return res.redirect('/login');
+  }
+
+  const sql = 'SELECT * FROM users WHERE email = ? AND password = SHA1(?)';
+  db.query(sql, [email, password], (err, results) => {
+    if (err) throw err;
+
+    if (results.length > 0) {
+      req.session.user = results[0]; 
+      req.flash('success', 'Login successful!');
+      res.redirect('/profile'); 
+    } else {
+      req.flash('error', 'Invalid email or password.');
+      res.redirect('/login');
+    }
+  });
+});
 
 //******** TODO: Start the server ********//
 const PORT = 3000;
