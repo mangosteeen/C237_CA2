@@ -10,8 +10,8 @@ const path = require('path');
 const db = mysql.createConnection({
     host: 'q7-dbf.h.filess.io',
     port: 3307,
-    user: 'CA2database_forgotten',        
-    password: '69a15e57e33ad4c69c9574abfc7d967431ee99ae',       
+    user: 'CA2database_forgotten',
+    password: '69a15e57e33ad4c69c9574abfc7d967431ee99ae',
     database: 'CA2database_forgotten'
 });
 
@@ -32,7 +32,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     // Session expires after 1 week of inactivity
-    cookie: {maxAge: 1000 * 60 * 60 * 24 * 7}
+    cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 }
 }));
 
 app.use(flash());
@@ -81,7 +81,7 @@ const validateRegistration = (req, res, next) => {
 
 //******** TODO: Insert code for main landing page ********//
 app.get('/', (req, res) => {
-    res.render('index', { user: req.session.user, messages: req.flash('success')});
+    res.render('index', { user: req.session.user, messages: req.flash('success') });
 });
 
 //******** TODO: Insert code for registration page ********//
@@ -107,9 +107,9 @@ app.post('/register', validateRegistration, (req, res) => {
 
 //******** TODO: Insert code for login routes to render login page below ********//
 app.get('/login', (req, res) => {
-    res.render('login', { 
-        messages: req.flash('success'), 
-        errors: req.flash('error') 
+    res.render('login', {
+        messages: req.flash('success'),
+        errors: req.flash('error')
     });
 });
 
@@ -140,15 +140,18 @@ app.post('/login', (req, res) => {
 
 // --------------entong - View list of Request--------------------------------------------------//
 app.get('/view', checkAuthenticated, (req, res) => {
-    const userId = req.session.user.id;
-    const sql = 'SELECT * FROM requests';
+    const userId = req.session.user.id;  // Get the logged-in user's ID
+    const sql = 'SELECT * FROM requests WHERE elderId = ?';  // Filter by elderId
 
-    db.query(sql, [userId, req.session.user.role], (err, results) => {
-        if (err) return res.status(500).send('Database error');
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).send('Database error');
+        }
 
         res.render('view', { 
             user: req.session.user,
-            userRequests: results 
+            userRequests: results  // Only shows the requests for this elderly user
         });
     });
 });
@@ -182,7 +185,7 @@ app.post('/addNewRequest', (req, res) => {
     const errors = [];
 
     // Basic validation
-    if (!name || !taskType || !description || !urgency ) {
+    if (!name || !taskType || !description || !urgency) {
         errors.push('All fields are required.');
     }
 
@@ -197,9 +200,11 @@ app.post('/addNewRequest', (req, res) => {
 
     const requestStatus = 'pending'; // Status is always 'pending' when created by elderly
 
+    const userId = req.session.user.id;  // Get the logged-in user's ID
+    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus, elderId) VALUES (?, ?, ?, ?, ?, ?)';
 
-    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
+    // Insert the new request into the database with the logged-in user's ID
+    db.query(sql, [name, taskType, description, urgency, requestStatus, userId], (error, results) => {
         if (error) {
             console.error("Error adding request:", error);
             return res.render('addNewRequest', {
@@ -221,110 +226,110 @@ app.post('/addNewRequest', (req, res) => {
 });
 
 
-// --------------------Chia En - Edit/Update request------------------------------------------------------
-app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
-    const sql = 'SELECT * FROM requests WHERE id = ?';
+    // --------------------Chia En - Edit/Update request------------------------------------------------------
+    app.get('/requests/:id/edit', checkAuthenticated, (req, res) => {
+        const requestId = req.params.id;
+        const sql = 'SELECT * FROM requests WHERE id = ?';
 
-    db.query(sql, [requestId], (error, results) => {
-        if (error) throw error;
+        db.query(sql, [requestId], (error, results) => {
+            if (error) throw error;
 
-        if (results.length > 0) {
-            res.render('editRequest', { request: results[0], user: req.session.user });
-        } else {
-            res.status(404).send('Request not found');
-        }
-    });
-});
-
-app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
-    const { elderName, taskType, description, urgency } = req.body;
-
-    const sql = 'UPDATE requests SET elderName = ?, taskType = ?, description = ?, urgency = ? WHERE id = ?';
-    db.query(sql, [elderName, taskType, description, urgency, requestId], (error) => {
-        if (error) {
-            console.error("Error updating request:", error);
-            res.status(500).send('Error updating request');
-        } else {
-            res.redirect('/view'); 
-        }
-    });
-});
-
-// ----------------------Quinn - Delete request------------------------------------------------------------
-app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
-  const sql = 'DELETE FROM requests WHERE id = ?';
-  db.query(sql, [req.params.id], (err) => {
-    if (err) req.flash('error', 'Error deleting request');
-    else req.flash('success', 'Request deleted');
-    res.redirect('/view');
-  });
-});
-
-// -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
-app.get('/filter', checkAuthenticated, (req, res) => {
-    const { el, urgency, taskType } = req.query; // Renamed 'title' to 'el' for Elder's Name
-
-    let sql = 'SELECT * FROM requests WHERE 1=1'; // Change 'tasks' to 'requests' to match your table
-    let queryValues = [];
-
-    // Filter by Elder's Name (el)
-    if (el) {
-        sql += ' AND elderName LIKE ?';
-        queryValues.push(`%${el}%`);
-    }
-
-    // Filter by Urgency
-    if (urgency) {
-        sql += ' AND urgency = ?';
-        queryValues.push(urgency);
-    }
-
-    // Filter by Task Type
-    if (taskType) {
-        sql += ' AND taskType = ?';
-        queryValues.push(taskType);
-    }
-
-    // Execute the query to get the filtered results
-    db.query(sql, queryValues, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Database error');
-        }
-
-        // Render the results to the filter page with the applied filters
-        res.render('filter', { 
-            tasks: results, 
-            el,  // Pass 'el' for the elder's name filter to maintain the input field value
-            urgency, 
-            taskType 
+            if (results.length > 0) {
+                res.render('editRequest', { request: results[0], user: req.session.user });
+            } else {
+                res.status(404).send('Request not found');
+            }
         });
     });
-});
 
+    app.post('/requests/:id/update', checkAuthenticated, (req, res) => {
+        const requestId = req.params.id;
+        const { elderName, taskType, description, urgency } = req.body;
 
-// POST route to handle status change (volunteer accepts)
-app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
-    const requestId = req.params.id;
-    const newStatus = 'accepted'; // Volunteer accepting the request, status changes to accepted
-
-    const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
-    connection.query(sql, [newStatus, requestId], (error, results) => {
-        if (error) {
-            console.error("Error updating request status:", error);
-            return res.status(500).send('Error updating status');
-        } else {
-            // Success, redirect to the page where volunteer can see requests or some confirmation page
-            res.redirect('/view');  // Redirect to some page
-        }
+        const sql = 'UPDATE requests SET elderName = ?, taskType = ?, description = ?, urgency = ? WHERE id = ?';
+        db.query(sql, [elderName, taskType, description, urgency, requestId], (error) => {
+            if (error) {
+                console.error("Error updating request:", error);
+                res.status(500).send('Error updating request');
+            } else {
+                res.redirect('/view');
+            }
+        });
     });
-});
+
+    // ----------------------Quinn - Delete request------------------------------------------------------------
+    app.get('/requests/:id/delete', checkAuthenticated, checkAdmin, (req, res) => {
+        const sql = 'DELETE FROM requests WHERE id = ?';
+        db.query(sql, [req.params.id], (err) => {
+            if (err) req.flash('error', 'Error deleting request');
+            else req.flash('success', 'Request deleted');
+            res.redirect('/view');
+        });
+    });
+
+    // -------------------------Hui Zhi - Filter/Search-----------------------------------------------------------
+    app.get('/filter', checkAuthenticated, (req, res) => {
+        const { el, urgency, taskType } = req.query; // Renamed 'title' to 'el' for Elder's Name
+
+        let sql = 'SELECT * FROM requests WHERE 1=1'; // Change 'tasks' to 'requests' to match your table
+        let queryValues = [];
+
+        // Filter by Elder's Name (el)
+        if (el) {
+            sql += ' AND elderName LIKE ?';
+            queryValues.push(`%${el}%`);
+        }
+
+        // Filter by Urgency
+        if (urgency) {
+            sql += ' AND urgency = ?';
+            queryValues.push(urgency);
+        }
+
+        // Filter by Task Type
+        if (taskType) {
+            sql += ' AND taskType = ?';
+            queryValues.push(taskType);
+        }
+
+        // Execute the query to get the filtered results
+        db.query(sql, queryValues, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Database error');
+            }
+
+            // Render the results to the filter page with the applied filters
+            res.render('filter', {
+                tasks: results,
+                el,  // Pass 'el' for the elder's name filter to maintain the input field value
+                urgency,
+                taskType
+            });
+        });
+    });
 
 
-//******** TODO: Start the server ********//
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+    // POST route to handle status change (volunteer accepts)
+    app.post('/acceptRequest/:id', checkAuthenticated, (req, res) => {
+        const requestId = req.params.id;
+        const newStatus = 'accepted'; // Volunteer accepting the request, status changes to accepted
+
+        const sql = 'UPDATE requests SET requestStatus = ? WHERE id = ?';
+        connection.query(sql, [newStatus, requestId], (error, results) => {
+            if (error) {
+                console.error("Error updating request status:", error);
+                return res.status(500).send('Error updating status');
+            } else {
+                // Success, redirect to the page where volunteer can see requests or some confirmation page
+                res.redirect('/view');  // Redirect to some page
+            }
+        });
+    });
+
+
+    //******** TODO: Start the server ********//
+    const PORT = 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
