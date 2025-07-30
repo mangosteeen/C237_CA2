@@ -512,29 +512,24 @@ app.post('/requests/:id/conversation', checkAuthenticated, (req, res) => {
 });
 
 // --------------------------------profile---------------------------------------
-// Route to display user profile
 app.get('/profile', checkAuthenticated, (req, res) => {
   const user = req.session.user;
   res.render('profile', { user: user, messages: req.flash('success') });
 });
 
-// Route to handle profile updates
 app.post('/profile', checkAuthenticated, (req, res) => {
   const { email, contact, address, password } = req.body;
   const userId = req.session.user.id;
 
-  // Basic validation
   if (!email || !contact || !address) {
     req.flash('error', 'All fields are required.');
     return res.redirect('/profile');
   }
 
-  // Update password if provided
   let updateQuery = 'UPDATE users SET email = ?, contact = ?, address = ?';
   let updateParams = [email, contact, address];
 
   if (password) {
-    // If a new password is provided, hash it and update the password
     updateQuery += ', password = SHA1(?)';
     updateParams.push(password);
   }
@@ -548,16 +543,15 @@ app.post('/profile', checkAuthenticated, (req, res) => {
       return res.redirect('/profile');
     }
 
-    req.session.user.email = email; // Update session with new email
-    req.session.user.contact = contact; // Update session with new contact
-    req.session.user.address = address; // Update session with new address
+    req.session.user.email = email; 
+    req.session.user.contact = contact; 
+    req.session.user.address = address; 
 
     req.flash('success', 'Profile updated successfully!');
     res.redirect('/profile');
   });
 });
 
-// In your login POST route
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
