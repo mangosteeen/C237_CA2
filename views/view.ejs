@@ -109,9 +109,13 @@
                                 <a href="/requests/<%= request.id %>/delete" onclick="return confirm('Are you sure you want to cancel this request?')" class="btn btn-outline-danger btn-sm">Cancel</a>
                             <% } %>
                             <% if (user.role === 'volunteer') { %>
-                                <form action="/acceptRequest/<%= request.id %>" method="POST">
-                                    <button type="submit" class="btn btn-success mt-2">Accept Request</button>
-                                </form>
+                                <% if (request.requestStatus === 'pending') { %>
+                                    <form action="/acceptRequest/<%= request.id %>" method="POST">
+                                        <button type="submit" class="btn btn-success mt-2">Accept Request</button>
+                                    </form>
+                                <% } else { %>
+                                    <button class="btn btn-secondary mt-2" disabled>Already Accepted</button>
+                                <% } %>
                             <% } %>
                         <% } %>
                     </div>
