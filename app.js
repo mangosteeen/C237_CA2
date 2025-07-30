@@ -164,24 +164,54 @@ app.get('/logout', (req, res) => {
 });
 
 // --------------Joanne - Add New request----------------------------------------------------------------------
+// GET route to show the add request form
 app.get('/addNewRequest', checkAuthenticated, (req, res) => {
-    res.render('addNewRequest', {user: req.session.user } ); 
+    res.render('addNewRequest', {
+        user: req.session.user,
+        errors: [],
+        messages: [],
+        formData: {}
+    });
 });
 
+// POST route to handle form submission
 app.post('/addNewRequest', (req, res) => {
-    // Extract request data from the request body
     const { name, taskType, description, urgency, requestStatus } = req.body;
-   
+
+    const errors = [];
+
+    // Basic validation
+    if (!name || !taskType || !description || !urgency || !requestStatus) {
+        errors.push('All fields are required.');
+    }
+
+    if (errors.length > 0) {
+        return res.render('addNewRequest', {
+            user: req.session.user,
+            errors,
+            messages: [],
+            formData: { name, taskType, description, urgency, requestStatus }
+        });
+    }
+
     const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-    // Insert the new request into the database
-    connection.query(sql , [name, taskType, description, urgency, requestStatus], (error, results) => {
+    connection.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
         if (error) {
-            // Handle any error that occurs during the database operation
             console.error("Error adding request:", error);
-            res.status(500).send('Error adding request');
+            return res.render('addNewRequest', {
+                user: req.session.user,
+                errors: ['Database error: Unable to add request.'],
+                messages: [],
+                formData: { name, taskType, description, urgency, requestStatus }
+            });
         } else {
-            // Send a success response
-            res.redirect('/');
+            // Success
+            res.render('addNewRequest', {
+                user: req.session.user,
+                errors: [],
+                messages: ['Request added successfully!'],
+                formData: {}
+            });
         }
     });
 });

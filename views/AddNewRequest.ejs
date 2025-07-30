@@ -92,12 +92,12 @@
 
       <div class="mb-4">
         <label for="urgency" class="form-label">Urgency</label>
-        <input type="text" class="form-control" id="urgency" name="urgency" required value="<%= formData ? formData.urgency : '' %>"/>
-      </div>
-
-      <div class="mb-4">
-        <label for="requestStatus" class="form-label">Request Status</label>
-        <input type="text" class="form-control" id="requestStatus" name="requestStatus" required value="<%= formData ? formData.requestStatus : '' %>"/>
+        <select class="form-control" id="urgency" name="urgency" required>
+          <option value="">-- Select Urgency --</option>
+          <option value="Low" <%=formData && formData.urgency==='Low' ? 'selected' : '' %>>Low</option>
+          <option value="Medium" <%=formData && formData.urgency==='Medium' ? 'selected' : '' %>>Medium</option>
+          <option value="High" <%=formData && formData.urgency==='High' ? 'selected' : '' %>>High</option>
+        </select>
       </div>
 
       <div class="d-grid">
