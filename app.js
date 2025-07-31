@@ -205,42 +205,56 @@ app.get('/addNewRequest', checkAuthenticated, (req, res) => {
 
 // POST route to handle form submission
 app.post('/addNewRequest', (req, res) => {
-    const { taskType, description, urgency } = req.body;
-    const name = req.session.user.username; // Fix: use logged-in user's name
+  const { taskType, description, urgency } = req.body;
 
-    const errors = [];
-
-    if (!taskType || !description || !urgency) {
-        errors.push('All fields are required.');
-    }
-
-    if (errors.length > 0) {
-        return res.render('addNewRequest', {
-            user: req.session.user,
-            errors,
-            messages: [],
-            formData: { taskType, description, urgency }
-        });
-    }
-
-    const requestStatus = 'pending';
-    const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
-
-    db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
-        if (error) {
-            console.error("Error adding request:", error);
-            return res.render('addNewRequest', {
-                user: req.session.user,
-                errors: ['Database error: Unable to add request.'],
-                messages: [],
-                formData: { taskType, description, urgency }
-            });
-        } else {
-            req.flash('success', 'Request added successfully!');
-            res.redirect('/view');
-        }
+  // Check if user is logged in
+  if (!req.session.user || !req.session.user.username) {
+    return res.status(401).render('addNewRequest', {
+      user: {},
+      errors: ['You must be logged in to submit a request.'],
+      messages: [],
+      formData: { taskType, description, urgency }
     });
+  }
+
+  const name = req.session.user.username;
+  const errors = [];
+
+  // Validate input
+  if (!taskType || !description || !urgency) {
+    errors.push('All fields are required.');
+  }
+
+  // Return form with errors if needed
+  if (errors.length > 0) {
+    return res.render('addNewRequest', {
+      user: req.session.user,
+      errors,
+      messages: [],
+      formData: { taskType, description, urgency }
+    });
+  }
+
+  const requestStatus = 'pending';
+  const sql = 'INSERT INTO requests (elderName, taskType, description, urgency, requestStatus) VALUES (?, ?, ?, ?, ?)';
+
+  // Try DB insert
+  db.query(sql, [name, taskType, description, urgency, requestStatus], (error, results) => {
+    if (error) {
+      console.error("Error adding request:", error);
+      return res.render('addNewRequest', {
+        user: req.session.user,
+        errors: ['Database error: Unable to add request.'],
+        messages: [],
+        formData: { taskType, description, urgency }
+      });
+    }
+
+    req.flash('success', 'Request added successfully!');
+    res.redirect('/view');
+  });
 });
+
 
 
 // --------------------Chia En - Edit/Update request------------------------------------------------------
